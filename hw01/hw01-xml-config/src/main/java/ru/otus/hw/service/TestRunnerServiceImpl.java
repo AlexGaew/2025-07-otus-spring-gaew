@@ -9,6 +9,11 @@ public class TestRunnerServiceImpl implements TestRunnerService {
 
   @Override
   public void run() {
-    testService.executeTest();
+    try {
+      testService.executeTest();
+    } catch (Exception e) {
+      System.out.println("An error occurred while executing the test. Please try again later.");
+    }
+
   }
 }
