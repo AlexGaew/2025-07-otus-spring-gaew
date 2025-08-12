@@ -24,7 +24,7 @@ public class CsvQuestionDao implements QuestionDao {
     var inputStream = getClass().getClassLoader().getResourceAsStream(fileNameProvider.getTestFileName());
 
     if (inputStream == null) {
-      throw new QuestionReadException("Файл не найден: " + fileNameProvider.getTestFileName());
+      throw new QuestionReadException("File not found: " + fileNameProvider.getTestFileName());
     }
 
     try (inputStream;
