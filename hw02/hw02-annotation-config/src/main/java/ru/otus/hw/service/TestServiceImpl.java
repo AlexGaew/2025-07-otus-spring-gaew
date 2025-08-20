@@ -6,6 +6,7 @@ import ru.otus.hw.dao.QuestionDao;
 import ru.otus.hw.domain.Question;
 import ru.otus.hw.domain.Student;
 import ru.otus.hw.domain.TestResult;
+import ru.otus.hw.exceptions.QuestionReadException;
 
 @RequiredArgsConstructor
 @Service
@@ -55,6 +56,11 @@ public class TestServiceImpl implements TestService {
   }
 
   private boolean checkAnswer(Question question) {
-    return question.answers().get(returnAnswerNumber(question)).isCorrect();
+    try {
+      return question.answers().get(returnAnswerNumber(question)).isCorrect();
+    } catch (RuntimeException e) {
+      ioService.printLine("Questions not found");
+    }
+    return false;
   }
 }
