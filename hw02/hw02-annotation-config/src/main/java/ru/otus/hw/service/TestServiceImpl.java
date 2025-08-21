@@ -6,13 +6,10 @@ import ru.otus.hw.dao.QuestionDao;
 import ru.otus.hw.domain.Question;
 import ru.otus.hw.domain.Student;
 import ru.otus.hw.domain.TestResult;
-import ru.otus.hw.exceptions.QuestionReadException;
 
 @RequiredArgsConstructor
 @Service
 public class TestServiceImpl implements TestService {
-
-  private static final String ERROR_MESSAGE = "Please, enter number answer from 1 to %s";
 
   private static final int INDEX_OFFSET = 1;
 
@@ -22,25 +19,14 @@ public class TestServiceImpl implements TestService {
 
   @Override
   public TestResult executeTestFor(Student student) {
+    displayMessage();
+
+    return getTestResult(student);
+  }
+
+  private void displayMessage() {
     ioService.printLine("");
     ioService.printFormattedLine("Please answer the questions below%n");
-    var questions = questionDao.findAll();
-    var testResult = new TestResult(student);
-
-    for (var question : questions) {
-      var isAnswerValid = false;
-      ioService.printFormattedLine("Question: %s", question.text());
-      ioService.printLine("Answers:");
-      printAnswer(question);
-
-      if (checkAnswer(question)) {
-        isAnswerValid = true;
-      }
-
-      ioService.printLine("");
-      testResult.applyAnswer(question, isAnswerValid);
-    }
-    return testResult;
   }
 
   private void printAnswer(Question question) {
@@ -50,7 +36,7 @@ public class TestServiceImpl implements TestService {
   private int returnAnswerNumber(Question question) {
     var answersSize = question.answers().size();
     int number = ioService.readIntForRangeWithPrompt(0, answersSize, "Enter number answer: ",
-        ERROR_MESSAGE.formatted(answersSize));
+        "Please, enter number answer from 1 to %s".formatted(answersSize));
 
     return number - INDEX_OFFSET;
   }
@@ -61,6 +47,23 @@ public class TestServiceImpl implements TestService {
     } catch (RuntimeException e) {
       ioService.printLine("Questions not found");
     }
+
     return false;
+  }
+
+  private TestResult getTestResult(Student student) {
+    var testResult = new TestResult(student);
+    var questions = questionDao.findAll();
+
+    for (var question : questions) {
+      ioService.printFormattedLine("Question: %s", question.text());
+      ioService.printLine("Answers:");
+      printAnswer(question);
+      var isAnswerValid = checkAnswer(question);
+      ioService.printLine("");
+      testResult.applyAnswer(question, isAnswerValid);
+    }
+
+    return testResult;
   }
 }
