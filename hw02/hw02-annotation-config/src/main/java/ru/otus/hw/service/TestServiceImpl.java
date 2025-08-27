@@ -19,23 +19,23 @@ public class TestServiceImpl implements TestService {
 
   @Override
   public TestResult executeTestFor(Student student) {
-    displayMessage();
+    displayStartQuestionsMessage();
 
     return getTestResult(student);
   }
 
-  private void displayMessage() {
+  private void displayStartQuestionsMessage() {
     ioService.printLine("");
     ioService.printFormattedLine("Please answer the questions below%n");
   }
 
-  private void printAnswer(Question question) {
-    question.answers().forEach(answer -> ioService.printFormattedLine(answer.text()));
+  private void printAnswers(Question question) {
+    question.answers().forEach(answer -> ioService.printLine(answer.text()));
   }
 
   private int returnAnswerNumber(Question question) {
     var answersSize = question.answers().size();
-    int number = ioService.readIntForRangeWithPrompt(0, answersSize, "Enter number answer: ",
+    int number = ioService.readIntForRangeWithPrompt(1, answersSize, "Enter number answer: ",
         "Please, enter number answer from 1 to %s".formatted(answersSize));
 
     return number - INDEX_OFFSET;
@@ -45,7 +45,7 @@ public class TestServiceImpl implements TestService {
     try {
       return question.answers().get(returnAnswerNumber(question)).isCorrect();
     } catch (RuntimeException e) {
-      ioService.printLine("Questions not found");
+      ioService.printLine("Answers not found");
     }
 
     return false;
@@ -58,7 +58,7 @@ public class TestServiceImpl implements TestService {
     for (var question : questions) {
       ioService.printFormattedLine("Question: %s", question.text());
       ioService.printLine("Answers:");
-      printAnswer(question);
+      printAnswers(question);
       var isAnswerValid = checkAnswer(question);
       ioService.printLine("");
       testResult.applyAnswer(question, isAnswerValid);
