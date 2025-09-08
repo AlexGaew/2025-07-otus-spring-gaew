@@ -1,0 +1,7 @@
+# Добавить сюда своих вопросов. Эту строку надо пропустить при настройке CsvToBean (withSkipLines)
+Есть ли жизнь на Марсе?;Это науке пока не известно%true|Конечно. Красные (НЛО) это с Марса. А зеленые (НЛО) с Венеры%false|Точно нет%false
+Как нужно загружать ресурс из jar в Java?;ClassLoader#geResourceAsStream или ClassPathResource#getInputStream%true|ClassLoader#geResource#getFile + FileReader%false|Wingardium Leviosa%false
+Какой предпочтительный способ реакции на исключения?;@SneakyThrow%false|e.printStackTrace()%false|Проброс дальше с предварительным оборачиванием в бизнес-исключение (например, QuestionReadException)%true|Игнорирование исключения%false
+Какая река является самой длинной в мире?;Амазонка%true|Нил%false|Янцзы%false|Миссисипи%false
+Кто написал роман "Война и мир"?;Фёдор Достоевский%false|Лев Толстой%true|Антон Чехов%false|Иван Тургенев%false
+В каком году закончилась Вторая мировая война?;1944%false|1945%true|1946%false|1947%false
