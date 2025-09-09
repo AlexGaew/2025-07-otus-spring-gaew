@@ -20,6 +20,7 @@ class CommonHwTest {
     private static final String CONFIGURATION_ANNOTATION_NAME = "org.springframework.context.annotation.Configuration";
 
     @Test
+    @DisplayName("Should not contain @Configuration annotation above itself")
     void shouldNotContainConfigurationAnnotationAboveItSelf() {
         assertThat(AppProperties.class.isAnnotationPresent(Configuration.class))
                 .withFailMessage("Класс свойств не является конфигурацией т.к. " +
@@ -28,6 +29,7 @@ class CommonHwTest {
     }
 
     @Test
+    @DisplayName("Should not contain @PropertySource annotation above itself")
     void shouldNotContainPropertySourceAnnotationAboveItSelf() {
         assertThat(AppProperties.class.isAnnotationPresent(PropertySource.class))
                 .withFailMessage("Аннотацию @PropertySource лучше вешать над конфигурацией, " +
@@ -36,6 +38,7 @@ class CommonHwTest {
     }
 
     @Test
+    @DisplayName("Should not contain field-injected dependencies or properties")
     void shouldNotContainFieldInjectedDependenciesOrProperties() {
         var provider = new ClassPathScanningCandidateComponentProvider(false);
         provider.addIncludeFilter((mr, mf) -> {

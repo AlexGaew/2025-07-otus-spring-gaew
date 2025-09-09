@@ -22,8 +22,8 @@ public class TestRunnerServiceImpl implements TestRunnerService {
       var testResult = testService.executeTestFor(student);
       resultService.showResult(testResult);
     } catch (Exception e) {
-      localizedIOService.printLine(
-          "An error occurred while executing the test. Please try again later." + e.getMessage());
+      localizedIOService.printLineLocalized(
+          "Error.executing.test");
     }
   }
 }

@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -32,6 +33,7 @@ public class CsvQuestionDaoTest {
   }
 
   @Test
+  @DisplayName("Should verify successful execution when reading the file.")
   public void positiveCaseWhenReadingFile() {
     List<Question> questions = csvQuestionDao.findAll();
     List<String> text = questions.stream()
@@ -47,6 +49,7 @@ public class CsvQuestionDaoTest {
   }
 
   @Test
+  @DisplayName("Should throw an exception if the file is missing.")
   public void negativeCaseFileNotFound() {
     when(fileNameProvider.getTestFileName()).thenReturn("questions1.csv");
 
