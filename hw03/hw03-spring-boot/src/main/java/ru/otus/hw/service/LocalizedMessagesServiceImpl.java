@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.otus.hw.config.LocaleConfig;
 
 @RequiredArgsConstructor
-@Service("localizedMessages")
+@Service("localizedMessagesService")
 public class LocalizedMessagesServiceImpl implements LocalizedMessagesService {
 
   private final LocaleConfig localeConfig;
