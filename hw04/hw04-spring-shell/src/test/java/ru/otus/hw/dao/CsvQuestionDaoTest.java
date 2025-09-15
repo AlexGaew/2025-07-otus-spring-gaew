@@ -10,26 +10,25 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import ru.otus.hw.config.TestFileNameProvider;
 import ru.otus.hw.domain.Question;
 import ru.otus.hw.exceptions.QuestionReadException;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest(classes = CsvQuestionDao.class)
 public class CsvQuestionDaoTest {
 
-  @Mock
+  @MockitoBean
   private TestFileNameProvider fileNameProvider;
 
-  @InjectMocks
+  @Autowired
   private CsvQuestionDao csvQuestionDao;
 
   @BeforeEach
   void setUp() {
-    when(fileNameProvider.getTestFileName()).thenReturn("questions.csv");
+    when(fileNameProvider.getTestFileName()).thenReturn("questions_ru.csv");
   }
 
   @Test
@@ -42,7 +41,7 @@ public class CsvQuestionDaoTest {
 
     verify(fileNameProvider, times(1)).getTestFileName();
     assertThat(questions).isNotEmpty();
-    assertThat(questions).hasSize(3);
+    assertThat(questions).hasSize(6);
     assertThat(questions.get(0)).isInstanceOf(Question.class);
     assertThat(questions).contains(questions.get(0));
     assertThat(questions).extracting(Question::text).containsExactlyElementsOf(text);
@@ -57,5 +56,4 @@ public class CsvQuestionDaoTest {
         .isInstanceOf(QuestionReadException.class)
         .hasMessage("File not found: " + fileNameProvider.getTestFileName());
   }
-
 }

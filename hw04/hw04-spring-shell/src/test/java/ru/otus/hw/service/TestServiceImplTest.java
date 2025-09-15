@@ -14,21 +14,25 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import ru.otus.hw.dao.QuestionDao;
 import ru.otus.hw.domain.Answer;
 import ru.otus.hw.domain.Question;
 import ru.otus.hw.domain.Student;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest(classes = TestServiceImpl.class)
 class TestServiceImplTest {
 
-  @Mock
+  @MockitoBean
   private LocalizedIOService localizedIOService;
 
-  @Mock
+  @MockitoBean
   private QuestionDao questionDao;
 
-  @InjectMocks
+  @Autowired
   private TestServiceImpl testService;
 
   private Student student;
@@ -53,7 +57,8 @@ class TestServiceImplTest {
     verify(localizedIOService, times(3)).printLine("");
     verify(localizedIOService, times(2)).printLineLocalized("Answer.text");
     verify(localizedIOService, times(1)).printLineLocalized("TestService.answer.the.questions");
-    verify(localizedIOService, times(2)).printFormattedLineLocalized("Question.text", questionOne.text());
+    verify(localizedIOService, times(2)).printFormattedLineLocalized("Question.text",
+        questionOne.text());
     verify(questionDao, times(1)).findAll();
     verify(localizedIOService, times(2)).printFormattedLineLocalized(anyString(), any());
   }
