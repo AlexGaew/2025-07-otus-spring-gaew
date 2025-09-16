@@ -1,6 +1,6 @@
 package ru.otus.hw.shell;
 
-public interface ShellService {
+public interface ShellTestCommand {
 
   void start();
 }

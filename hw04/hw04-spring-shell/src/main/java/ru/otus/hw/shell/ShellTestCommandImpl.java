@@ -5,9 +5,9 @@ import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import ru.otus.hw.service.TestRunnerService;
 
-@ShellComponent(value = "Application Events Commands")
+@ShellComponent(value = "Start test command")
 @RequiredArgsConstructor
-public class ShellServiceImpl implements ShellService {
+public class ShellTestCommandImpl implements ShellTestCommand {
 
   private final TestRunnerService testRunnerService;
 
