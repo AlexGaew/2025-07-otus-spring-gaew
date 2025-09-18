@@ -1,7 +1,6 @@
 package ru.otus.hw.repositories;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -32,6 +31,7 @@ public class JdbcAuthorRepository implements AuthorRepository {
   }
 
   private static class AuthorRowMapper implements RowMapper<Author> {
+
     @Override
     public Author mapRow(ResultSet rs, int i) throws SQLException {
       long id = rs.getLong("ID");

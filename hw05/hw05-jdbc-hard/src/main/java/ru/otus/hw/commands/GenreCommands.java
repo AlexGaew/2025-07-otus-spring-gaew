@@ -1,5 +1,6 @@
 package ru.otus.hw.commands;
 
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
@@ -12,14 +13,21 @@ import java.util.stream.Collectors;
 @ShellComponent
 public class GenreCommands {
 
-    private final GenreService genreService;
+  private final GenreService genreService;
 
-    private final GenreConverter genreConverter;
+  private final GenreConverter genreConverter;
 
-    @ShellMethod(value = "Find all genres", key = "ag")
-    public String findAllGenres() {
-        return genreService.findAll().stream()
-                .map(genreConverter::genreToString)
-                .collect(Collectors.joining("," + System.lineSeparator()));
-    }
+  @ShellMethod(value = "Find all genres", key = "ag")
+  public String findAllGenres() {
+    return genreService.findAll().stream()
+        .map(genreConverter::genreToString)
+        .collect(Collectors.joining("," + System.lineSeparator()));
+  }
+
+  @ShellMethod(value = "Find all genres by ids", key = "agids")
+  public String findAllGenresByIds(Set<Long> ids) {
+    return genreService.findAllByIds(ids).stream()
+        .map(genreConverter::genreToString)
+        .collect(Collectors.joining("," + System.lineSeparator()));
+  }
 }

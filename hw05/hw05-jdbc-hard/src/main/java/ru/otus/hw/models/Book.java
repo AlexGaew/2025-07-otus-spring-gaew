@@ -1,5 +1,7 @@
 package ru.otus.hw.models;
 
+import static java.util.Collections.emptyList;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,11 +12,19 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Book {
-    private long id;
 
-    private String title;
+  private long id;
 
-    private Author author;
+  private String title;
 
-    private List<Genre> genres;
+  private Author author;
+
+  private List<Genre> genres;
+
+  public Book(long id, String title, Author author) {
+    this.id = id;
+    this.title = title;
+    this.author = author;
+    this.genres = emptyList();
+  }
 }
