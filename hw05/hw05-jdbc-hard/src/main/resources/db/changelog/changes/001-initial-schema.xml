@@ -1,0 +1,73 @@
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+  <changeSet id="1-create-authors" author="alex">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="authors"/>
+      </not>
+    </preConditions>
+    <createTable tableName="authors">
+      <column name="id" type="BIGSERIAL">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="full_name" type="VARCHAR(255)"/>
+    </createTable>
+  </changeSet>
+
+  <changeSet id="2-create-genres" author="alex">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="genres"/>
+      </not>
+    </preConditions>
+    <createTable tableName="genres">
+      <column name="id" type="BIGSERIAL">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="name" type="VARCHAR(255)"/>
+    </createTable>
+  </changeSet>
+
+  <changeSet id="3-create-books" author="alex">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="books"/>
+      </not>
+    </preConditions>
+    <createTable tableName="books">
+      <column name="id" type="BIGSERIAL">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="title" type="VARCHAR(255)"/>
+      <column name="author_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_books_authors"
+          references="authors(id)" deleteCascade="true"/>
+      </column>
+    </createTable>
+  </changeSet>
+
+  <changeSet id="4-create-books-genres" author="alex">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="books_genres"/>
+      </not>
+    </preConditions>
+    <createTable tableName="books_genres">
+      <column name="book_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_bg_books"
+          references="books(id)" deleteCascade="true"/>
+      </column>
+      <column name="genre_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_bg_genres"
+          references="genres(id)" deleteCascade="true"/>
+      </column>
+    </createTable>
+    <addPrimaryKey tableName="books_genres" columnNames="book_id, genre_id"
+      constraintName="pk_books_genres"/>
+  </changeSet>
+
+</databaseChangeLog>
