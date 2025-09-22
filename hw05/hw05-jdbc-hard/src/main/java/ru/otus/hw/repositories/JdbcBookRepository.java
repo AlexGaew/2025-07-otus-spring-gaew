@@ -36,11 +36,21 @@ public class JdbcBookRepository implements BookRepository {
 
   @Override
   public Optional<Book> findById(long id) {
+    try {
+      Book book = jdbc.queryForObject("select ID, TITLE, AUTHOR_ID from books where ID = ?",
+          (rs, rowNum) -> new BookResultSetExtractor(authorRepository, genreRepository)
+              .extractData(rs), id);
+      if (book != null) {
+        List<Book> singletonList = List.of(book);
+        var genres = genreRepository.findAll();
+        var relations = getAllGenreRelations();
+        mergeBooksInfo(singletonList, genres, relations);
+      }
 
-    return Optional.ofNullable(
-        jdbc.queryForObject("select ID, TITLE, AUTHOR_ID from books where ID = ?",
-            (rs, rowNum) -> new BookResultSetExtractor(authorRepository, genreRepository)
-                .extractData(rs), id));
+      return Optional.ofNullable(book);
+    } catch (DataAccessException e) {
+      return Optional.empty();
+    }
   }
 
   @Override
@@ -168,7 +178,7 @@ public class JdbcBookRepository implements BookRepository {
       var title = rs.getString("TITLE");
       var authorId = rs.getLong("AUTHOR_ID");
       Author author = authorRepository.findById(authorId).orElse(null);
-      return new Book(id, title, author);
+      return new Book(id, title, author, emptyList());
     }
   }
 
@@ -198,7 +208,7 @@ public class JdbcBookRepository implements BookRepository {
       var authorId = rs.getLong("AUTHOR_ID");
       Author author = authorRepository.findById(authorId).orElse(null);
 
-      return new Book(id, title, author, List.of());
+      return new Book(id, title, author, emptyList());
     }
   }
 
