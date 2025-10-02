@@ -1,7 +1,7 @@
 package ru.otus.hw.repositories;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.otus.hw.models.Author;
@@ -15,7 +15,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class JdbcAuthorRepository implements AuthorRepository {
 
-  private final JdbcTemplate jdbc;
+  private final JdbcOperations jdbc;
 
   @Override
   public List<Author> findAll() {
@@ -26,8 +26,7 @@ public class JdbcAuthorRepository implements AuthorRepository {
   public Optional<Author> findById(long id) {
     return Optional.ofNullable(
         jdbc.queryForObject("select ID, FULL_NAME from authors where ID = ?",
-            (rs, rowNum) -> new Author(rs.getLong("ID"),
-                rs.getString("FULL_NAME")), id));
+            (rs, rowNum) -> new AuthorRowMapper().mapRow(rs, rowNum), id));
   }
 
   private static class AuthorRowMapper implements RowMapper<Author> {
