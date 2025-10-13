@@ -2,7 +2,6 @@ package ru.otus.hw.repositories;
 
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
@@ -113,15 +112,7 @@ public class JdbcBookRepository implements BookRepository {
 
   private Book update(Book book) {
 
-    Set<Long> genresIds = book.getGenres().stream()
-        .map(Genre::getId)
-        .collect(Collectors.toSet());
-
-    List<Genre> genres = genreRepository.findAllByIds(genresIds);
-
     removeGenresRelationsFor(book);
-
-    book.setGenres(genres);
 
     batchInsertGenresRelationsFor(book);
 

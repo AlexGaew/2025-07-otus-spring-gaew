@@ -1,8 +1,8 @@
 package ru.otus.hw.repositories;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonMap;
 
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -35,10 +35,9 @@ public class JdbcGenreRepository implements GenreRepository {
     }
 
     return namedParameterJdbcTemplate.query("select ID, NAME from genres where ID in (:ids)",
-        singletonMap("ids", ids),
-        (rs, rowNum) -> new Genre(rs.getLong("ID"),
-            rs.getString("NAME")
-        ));
+        Map.of("ids", ids),
+        new GnreRowMapper()
+    );
   }
 
   private static class GnreRowMapper implements RowMapper<Genre> {
