@@ -8,14 +8,15 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
-import ru.otus.hw.models.Author;
-import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Comment;
 
-@DisplayName("Репозиторий на основе Jpa для работы с Жанрами ")
+@DisplayName("Репозиторий на основе Jpa для работы с комментариями ")
 @DataJpaTest
 @Import({JpaCommentRepository.class, JpaBookRepository.class})
 class JpaCommentRepositoryTest {
@@ -27,57 +28,62 @@ class JpaCommentRepositoryTest {
   private BookRepository jpaBookRepository;
 
   @Autowired
+  private TestEntityManager testEntityManager;
+
+  @Autowired
   private EntityManager em;
 
-  private List<Comment> dbComment;
+  private List<Comment> dbComments;
 
   @BeforeEach
   void setUp() {
-    dbComment = getDbComment();
+    dbComments = getDbComments();
   }
 
-  @DisplayName("должен загружать comment по id")
-  @Test
-  void shouldReturnCorrectCommentById() {
-    var expectedComment = dbComment.get(0);
+  @DisplayName("должен загружать комментарий по id")
+  @ParameterizedTest
+  @MethodSource("getDbComments")
+  void shouldReturnCorrectCommentById(Comment expectedComment) {
+    var actualComment = jpaCommentRepository.findById(expectedComment.getId());
 
-    var actualComment = jpaCommentRepository.findById(1).get();
-
-    assertThat(actualComment).usingRecursiveComparison()
-        .ignoringFields("book")
-        .isEqualTo(expectedComment);
-    System.out.println(actualComment);
-  }
-
-  @DisplayName("должен загружать список всех comments по book id")
-  @Test
-  void shouldReturnCorrectCommentList() {
-    var book = jpaBookRepository.findById(1L).get();
-    var expectedComments = jpaCommentRepository.findByBookId(book.getId());
-    var actualComments = book.getComments();
-
-    assertThat(actualComments).usingRecursiveComparison()
-        .isEqualTo(expectedComments);
-    actualComments.forEach(System.out::println);
-  }
-
-  @DisplayName("должен добавить комментарий к книге")
-  @Test
-  void shouldAddCommentToBook() {
-    var book = jpaBookRepository.findById(1L).get();
-    var newComment = new Comment(0, "New comment", book);
-    var returnComment = jpaCommentRepository.save(newComment);
-    em.flush();
-    em.clear();
-    var actualComment = jpaBookRepository.findById(1L).get().getComments().get(2);
-
-    assertThat(actualComment)
+    assertThat(actualComment).isPresent()
+        .get()
         .usingRecursiveComparison()
         .ignoringFields("book")
-        .isEqualTo(returnComment);
+        .isEqualTo(expectedComment);
   }
 
-  private static List<Comment> getDbComment() {
+  @DisplayName("должен загружать список всех комментариев по book id")
+  @Test
+  void shouldReturnCorrectCommentsByBookId() {
+    var book = jpaBookRepository.findById(1L);
+    assertThat(book).isPresent();
+
+    var actualComments = jpaCommentRepository.findByBookId(book.get().getId());
+
+    assertThat(actualComments).isNotEmpty()
+        .hasSize(2);
+  }
+
+  @DisplayName("должен сохранять новый комментарий")
+  @Test
+  void shouldSaveNewComment() {
+    var book = jpaBookRepository.findById(1L);
+    assertThat(book).isPresent();
+
+    var newComment = new Comment(0, "New comment", book.get());
+    var returnedComment = jpaCommentRepository.save(newComment);
+    em.flush();
+    em.clear();
+
+    Comment actualComment = testEntityManager.find(Comment.class, returnedComment.getId());
+    assertThat(actualComment).isNotNull();
+    assertThat(actualComment.getId()).isEqualTo(returnedComment.getId());
+    assertThat(actualComment.getComment()).isEqualTo(returnedComment.getComment());
+    assertThat(actualComment.getBook().getId()).isEqualTo(book.get().getId());
+  }
+
+  private static List<Comment> getDbComments() {
     return IntStream.range(1, 7).boxed()
         .map(id -> new Comment(id, "Comment_" + id, null))
         .toList();

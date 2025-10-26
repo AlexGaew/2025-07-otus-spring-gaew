@@ -4,9 +4,7 @@ import static org.springframework.data.jpa.repository.EntityGraph.EntityGraphTyp
 
 import jakarta.persistence.EntityGraph;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import ru.otus.hw.models.Book;
@@ -21,15 +19,17 @@ public class JpaBookRepository implements BookRepository {
 
   @Override
   public Optional<Book> findById(long id) {
-    EntityGraph<?> entityGraph = em.getEntityGraph("book-full");
-    Map<String, Object> hints = Map.of(FETCH.getKey(), entityGraph);
-    Book book = em.find(Book.class, id, hints);
-    return Optional.ofNullable(book);
+    TypedQuery<Book> query = em.createQuery(
+            "select b from Book b join fetch b.author left join fetch b.genres where b.id = :id", Book.class)
+        .setParameter("id", id);
+    List<Book> books = query.getResultList();
+
+    return books.isEmpty() ? Optional.empty() : Optional.of(books.get(0));
   }
 
   @Override
   public List<Book> findAll() {
-    EntityGraph<?> entityGraph = em.getEntityGraph("book-list");
+    EntityGraph<?> entityGraph = em.getEntityGraph("author-entity-graph");
     TypedQuery<Book> query = em.createQuery("select b from Book b", Book.class);
     query.setHint(FETCH.getKey(), entityGraph);
     return query.getResultList();
@@ -46,13 +46,12 @@ public class JpaBookRepository implements BookRepository {
 
   @Override
   public void deleteById(long id) {
-    Query query = em.createQuery("delete from Book where id = :id")
-        .setParameter("id", id);
-    query.executeUpdate();
+    Book book = em.getReference(Book.class, id);
+    em.remove(book);
   }
 
   @Override
   public Book update(Book book) {
-    return em.merge(book);
+    return this.save(book);
   }
 }

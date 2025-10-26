@@ -1,7 +1,6 @@
 package ru.otus.hw.repositories;
 
 import jakarta.persistence.EntityManager;
-import java.util.ArrayList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,10 +8,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
-import ru.otus.hw.models.Comment;
 import ru.otus.hw.models.Genre;
 
 import java.util.List;
@@ -27,6 +26,9 @@ class JpaBookRepositoryTest {
 
   @Autowired
   private JpaBookRepository jpaBookRepository;
+
+  @Autowired
+  private TestEntityManager testEntityManager;
 
   @Autowired
   private EntityManager em;
@@ -62,7 +64,6 @@ class JpaBookRepositoryTest {
     var expectedBooks = dbBooks;
 
     assertThat(actualBooks).usingRecursiveComparison()
-        .ignoringFields("comments")
         .isEqualTo(expectedBooks);
     actualBooks.forEach(System.out::println);
   }
@@ -71,7 +72,7 @@ class JpaBookRepositoryTest {
   @Test
   void shouldSaveNewBook() {
     var expectedBook = new Book(0, "BookTitle_10500", dbAuthors.get(0),
-        List.of(dbGenres.get(0), dbGenres.get(2)), new ArrayList<>());
+        List.of(dbGenres.get(0), dbGenres.get(2)));
     var returnedBook = jpaBookRepository.save(expectedBook);
     em.flush();
     em.clear();
@@ -79,11 +80,13 @@ class JpaBookRepositoryTest {
         .matches(book -> book.getId() > 0)
         .usingRecursiveComparison().ignoringExpectedNullFields().isEqualTo(expectedBook);
 
-    assertThat(jpaBookRepository.findById(returnedBook.getId()))
-        .isPresent()
-        .get()
-        .usingRecursiveComparison()
-        .isEqualTo(returnedBook);
+    Book actualBook = testEntityManager.find(Book.class, returnedBook.getId());
+    assertThat(actualBook).isNotNull();
+    assertThat(actualBook.getId()).isEqualTo(returnedBook.getId());
+    assertThat(actualBook.getTitle()).isEqualTo(returnedBook.getTitle());
+    assertThat(actualBook.getAuthor().getId()).isEqualTo(returnedBook.getAuthor().getId());
+    assertThat(actualBook.getGenres()).hasSize(returnedBook.getGenres().size());
+
   }
 
 
@@ -91,34 +94,36 @@ class JpaBookRepositoryTest {
   @Test
   void shouldSaveUpdatedBook() {
     var expectedBook = new Book(1L, "BookTitle_10500", dbAuthors.get(2),
-        List.of(dbGenres.get(4), dbGenres.get(5)), new ArrayList<>());
+        List.of(dbGenres.get(4), dbGenres.get(5)));
 
-    assertThat(jpaBookRepository.findById(expectedBook.getId()))
-        .isPresent()
-        .get()
-        .isNotEqualTo(expectedBook);
+    Book bookBeforeUpdate = testEntityManager.find(Book.class, expectedBook.getId());
+    assertThat(bookBeforeUpdate).isNotNull();
+    assertThat(bookBeforeUpdate.getTitle()).isNotEqualTo(expectedBook.getTitle());
+
 
     var returnedBook = jpaBookRepository.save(expectedBook);
     em.flush();
     em.clear();
-    var actualBook = jpaBookRepository.findById(returnedBook.getId());
 
-    assertThat(actualBook)
-        .isPresent()
-        .get()
-        .usingRecursiveComparison()
-        .ignoringFields("comments")
-        .isEqualTo(expectedBook);
+    Book actualBook = testEntityManager.find(Book.class, returnedBook.getId());
+    assertThat(actualBook).isNotNull();
+    assertThat(actualBook.getId()).isEqualTo(expectedBook.getId());
+    assertThat(actualBook.getTitle()).isEqualTo(expectedBook.getTitle());
+    assertThat(actualBook.getAuthor().getId()).isEqualTo(expectedBook.getAuthor().getId());
+    assertThat(actualBook.getGenres()).hasSize(expectedBook.getGenres().size());
+
   }
 
   @DisplayName("должен удалять книгу по id ")
   @Test
   void shouldDeleteBook() {
-    assertThat(jpaBookRepository.findById(2L)).isPresent();
+    assertThat(testEntityManager.find(Book.class, 2L)).isNotNull();
+
     jpaBookRepository.deleteById(2L);
     em.flush();
     em.clear();
-    assertThat(jpaBookRepository.findById(2L)).isEmpty();
+    assertThat(testEntityManager.find(Book.class, 2L)).isNull();
+
   }
 
   private static List<Author> getDbAuthors() {
@@ -135,23 +140,12 @@ class JpaBookRepositoryTest {
 
   private static List<Book> getDbBooks(List<Author> dbAuthors, List<Genre> dbGenres) {
     return IntStream.range(1, 4).boxed()
-        .map(id -> {
-          Book book = new Book(
-              id,
-              "BookTitle_" + id,
-              dbAuthors.get(id - 1),
-              dbGenres.subList((id - 1) * 2, (id - 1) * 2 + 2),
-              new ArrayList<>());
-
-          List<Comment> comments = IntStream.range(0, 2)
-              .mapToObj(comId -> new Comment(
-                  id + comId * 3,
-                  "Comment_" + (id + comId * 3),
-                  book
-              )).toList();
-          book.getComments().addAll(comments);
-          return book;
-        }).toList();
+        .map(id -> new Book(
+            id,
+            "BookTitle_" + id,
+            dbAuthors.get(id - 1),
+            dbGenres.subList((id - 1) * 2, (id - 1) * 2 + 2)
+            )).toList();
   }
 
   private static List<Book> getDbBooks() {

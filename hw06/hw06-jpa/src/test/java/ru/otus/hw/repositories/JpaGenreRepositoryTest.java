@@ -2,7 +2,6 @@ package ru.otus.hw.repositories;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,16 +12,13 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import ru.otus.hw.models.Genre;
 
-@DisplayName("Репозиторий на основе Jpa для работы с Жанрами ")
+@DisplayName("Репозиторий на основе Jpa для работы с жанрами ")
 @DataJpaTest
 @Import({JpaGenreRepository.class})
 class JpaGenreRepositoryTest {
 
   @Autowired
   private JpaGenreRepository jpaGenreRepository;
-
-  @Autowired
-  private EntityManager em;
 
   private List<Genre> dbGenres;
 
@@ -41,7 +37,6 @@ class JpaGenreRepositoryTest {
     var actualGenres = jpaGenreRepository.findAllByIds(ids);
     assertThat(actualGenres).usingRecursiveComparison()
         .isEqualTo(expectedGenres);
-    actualGenres.forEach(System.out::println);
   }
 
   @DisplayName("должен загружать список всех жанров")
@@ -52,7 +47,6 @@ class JpaGenreRepositoryTest {
 
     assertThat(actualGenres).usingRecursiveComparison()
         .isEqualTo(expectedGenres);
-    actualGenres.forEach(System.out::println);
   }
 
   private static List<Genre> getDbGenres() {

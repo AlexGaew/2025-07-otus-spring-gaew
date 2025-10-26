@@ -1,9 +1,9 @@
 package ru.otus.hw.services;
 
-import jakarta.transaction.Transactional;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.repositories.AuthorRepository;
@@ -17,7 +17,7 @@ public class AuthorServiceImpl implements AuthorService {
   private final AuthorRepository authorRepository;
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<AuthorDto> findAll() {
     List<Author> authors = authorRepository.findAll();
     return authors.stream().map(AuthorDto::from)
@@ -25,7 +25,7 @@ public class AuthorServiceImpl implements AuthorService {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Optional<AuthorDto> findById(long id) {
     var author = authorRepository.findById(id);
     return author.map(AuthorDto::from);

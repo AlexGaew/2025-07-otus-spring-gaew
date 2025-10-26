@@ -1,9 +1,8 @@
 package ru.otus.hw.services;
 
-import jakarta.transaction.Transactional;
-import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.models.Book;
@@ -27,14 +26,14 @@ public class BookServiceImpl implements BookService {
   private final BookRepository bookRepository;
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Optional<BookDto> findById(long id) {
     var book = bookRepository.findById(id);
     return book.map(BookDto::from);
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<BookDto> findAll() {
     var books = bookRepository.findAll();
     return books.stream().map(BookDto::from)
@@ -73,7 +72,7 @@ public class BookServiceImpl implements BookService {
       throw new EntityNotFoundException("One or all genres with ids %s not found".formatted(genresIds));
     }
 
-    var book = new Book(id, title, author, genres, new ArrayList<>());
+    var book = new Book(id, title, author, genres);
     var bookSaved = bookRepository.save(book);
 
     return BookDto.from(bookSaved);

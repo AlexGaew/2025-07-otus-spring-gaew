@@ -1,10 +1,10 @@
 package ru.otus.hw.services;
 
-import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.otus.hw.dto.CommentDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.models.Comment;
@@ -20,14 +20,14 @@ public class CommentServiceImpl implements CommentService {
   private final BookRepository bookRepository;
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Optional<CommentDto> findCommentById(long id) {
     var comment = commentRepository.findById(id);
     return comment.map(CommentDto::from);
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<CommentDto> findAllById(Long bookId) {
     var comments = commentRepository.findByBookId(bookId);
     return CommentDto.fromList(comments);

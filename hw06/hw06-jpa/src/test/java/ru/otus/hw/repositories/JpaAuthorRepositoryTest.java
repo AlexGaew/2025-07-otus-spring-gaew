@@ -7,12 +7,14 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import ru.otus.hw.models.Author;
 
-@DisplayName("Репозиторий на основе Jpa для работы с Жанрами ")
+@DisplayName("Репозиторий на основе Jpa для работы с авторами ")
 @DataJpaTest
 @Import({JpaAuthorRepository.class})
 class JpaAuthorRepositoryTest {
@@ -20,37 +22,36 @@ class JpaAuthorRepositoryTest {
   @Autowired
   private JpaAuthorRepository jpaAuthorRepository;
 
-  private List<Author> dbAuthor;
+  private List<Author> dbAuthors;
 
   @BeforeEach
   void setUp() {
-    dbAuthor = getDbAuthor();
+    dbAuthors = getDbAuthors();
   }
 
-  @DisplayName("должен загружать autor по id")
-  @Test
-  void shouldReturnCorrectAuthorById() {
-    var expectedAuthor = getDbAuthor().get(0);
+  @DisplayName("должен загружать автора по id")
+  @ParameterizedTest
+  @MethodSource("getDbAuthors")
+  void shouldReturnCorrectAuthorById(Author expectedAuthor) {
+    var actualAuthor = jpaAuthorRepository.findById(expectedAuthor.getId());
 
-    var actualAuthor = jpaAuthorRepository.findById(1).get();
-
-    assertThat(actualAuthor).usingRecursiveComparison()
+    assertThat(actualAuthor).isPresent()
+        .get()
+        .usingRecursiveComparison()
         .isEqualTo(expectedAuthor);
-    System.out.println(actualAuthor);
   }
 
-  @DisplayName("должен загружать список всех authors")
+  @DisplayName("должен загружать список всех авторов")
   @Test
   void shouldReturnCorrectAuthorsList() {
     var actualAuthors = jpaAuthorRepository.findAll();
-    var expectedAuthors = dbAuthor;
+    var expectedAuthors = dbAuthors;
 
     assertThat(actualAuthors).usingRecursiveComparison()
         .isEqualTo(expectedAuthors);
-    actualAuthors.forEach(System.out::println);
   }
 
-  private static List<Author> getDbAuthor() {
+  private static List<Author> getDbAuthors() {
     return IntStream.range(1, 4).boxed()
         .map(id -> new Author(id, "Author_" + id))
         .toList();

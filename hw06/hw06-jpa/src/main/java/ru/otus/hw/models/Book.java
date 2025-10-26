@@ -12,29 +12,21 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @NamedEntityGraph(
-    name = "book-full",
+    name = "author-entity-graph",
     attributeNodes = {
         @NamedAttributeNode("author"),
-        @NamedAttributeNode("genres"),
-        @NamedAttributeNode("comments"),
-    }
-)
-@NamedEntityGraph(
-    name = "book-list",
-    attributeNodes = {
-        @NamedAttributeNode("author"),
-        @NamedAttributeNode("genres"),
     }
 )
 @Entity
@@ -59,9 +51,8 @@ public class Book {
       joinColumns = @JoinColumn(name = "book_id"),
       inverseJoinColumns = @JoinColumn(name = "genre_id")
   )
+  @Fetch(FetchMode.SUBSELECT)
   private List<Genre> genres;
 
-  @OneToMany(fetch = FetchType.LAZY, mappedBy = "book")
-  private List<Comment> comments;
 
 }
