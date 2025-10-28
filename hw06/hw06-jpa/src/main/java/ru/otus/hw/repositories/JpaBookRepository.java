@@ -5,6 +5,7 @@ import static org.springframework.data.jpa.repository.EntityGraph.EntityGraphTyp
 import jakarta.persistence.EntityGraph;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import ru.otus.hw.models.Book;
@@ -19,12 +20,9 @@ public class JpaBookRepository implements BookRepository {
 
   @Override
   public Optional<Book> findById(long id) {
-    TypedQuery<Book> query = em.createQuery(
-            "select b from Book b join fetch b.author left join fetch b.genres where b.id = :id", Book.class)
-        .setParameter("id", id);
-    List<Book> books = query.getResultList();
-
-    return books.isEmpty() ? Optional.empty() : Optional.of(books.get(0));
+    EntityGraph<?> entityGraph = em.getEntityGraph("author-entity-graph");
+    Book book = em.find(Book.class, id, Map.of(FETCH.getKey(), entityGraph));
+    return Optional.ofNullable(book);
   }
 
   @Override

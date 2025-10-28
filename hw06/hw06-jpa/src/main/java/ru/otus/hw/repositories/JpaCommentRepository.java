@@ -3,7 +3,6 @@ package ru.otus.hw.repositories;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -31,11 +30,7 @@ public class JpaCommentRepository implements CommentRepository {
   public List<Comment> findByBookId(Long bookId) {
     TypedQuery<Comment> query = em.createQuery("select c from Comment c where c.book.id = :bookId ", Comment.class)
         .setParameter("bookId", bookId);
-    try {
-      return query.getResultList();
-    } catch (NoResultException e) {
-      return new ArrayList<>();
-    }
+    return query.getResultList();
   }
 
   @Override

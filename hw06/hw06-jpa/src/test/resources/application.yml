@@ -5,3 +5,7 @@ spring:
   liquibase:
     change-log: classpath:changelog/db.changelog-master.xml
     enabled: true
+
+  shell:
+    interactive:
+      enabled: false
