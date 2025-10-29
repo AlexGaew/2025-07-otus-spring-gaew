@@ -29,6 +29,13 @@ import org.hibernate.annotations.FetchMode;
         @NamedAttributeNode("author"),
     }
 )
+@NamedEntityGraph(
+    name = "author-genre-entity-graph",
+    attributeNodes = {
+        @NamedAttributeNode("author"),
+        @NamedAttributeNode("genres"),
+    }
+)
 @Entity
 @Getter
 @Table(name = "books")
