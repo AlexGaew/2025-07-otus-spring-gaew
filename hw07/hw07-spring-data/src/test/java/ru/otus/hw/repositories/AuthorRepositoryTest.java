@@ -15,7 +15,7 @@ import ru.otus.hw.models.Author;
 
 @DisplayName("Репозиторий на основе Jpa для работы с авторами ")
 @DataJpaTest
-class JpaAuthorRepositoryTest {
+class AuthorRepositoryTest {
 
   @Autowired
   private AuthorRepository authorRepository;

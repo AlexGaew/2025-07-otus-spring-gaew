@@ -16,7 +16,7 @@ import ru.otus.hw.models.Comment;
 
 @DisplayName("Репозиторий на основе Jpa для работы с комментариями ")
 @DataJpaTest
-class JpaCommentRepositoryTest {
+class CommentRepositoryTest {
 
   @Autowired
   private CommentRepository commentRepository;
