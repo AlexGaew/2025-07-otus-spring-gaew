@@ -1,0 +1,32 @@
+package ru.otus.hw.models;
+
+import java.util.Arrays;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Document(collection = "books")
+public class Book {
+
+  @Id
+  private String id;
+
+  private String title;
+
+  private Author author;
+
+  private List<Genre> genres;
+
+  public Book(String title, Author author, Genre... genres) {
+    this.title = title;
+    this.author = author;
+    this.genres = Arrays.asList(genres);
+  }
+}
