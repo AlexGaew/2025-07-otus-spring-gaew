@@ -5,7 +5,9 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.otus.hw.dto.CommentDto;
+import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.models.Comment;
+import ru.otus.hw.repositories.BookRepository;
 import ru.otus.hw.repositories.CommentRepository;
 
 @Service
@@ -13,6 +15,8 @@ import ru.otus.hw.repositories.CommentRepository;
 public class CommentServiceImpl implements CommentService {
 
   private final CommentRepository commentRepository;
+
+  private final BookRepository bookRepository;
 
   @Override
   public Optional<CommentDto> findCommentById(String id) {
@@ -28,8 +32,10 @@ public class CommentServiceImpl implements CommentService {
 
   @Override
   public Optional<CommentDto> addComment(String bookId, String comment) {
+    var book = bookRepository.findById(bookId)
+        .orElseThrow(() -> new EntityNotFoundException("Book with id %s not found".formatted(bookId)));
 
-    Comment newComment = new Comment(null, comment, bookId);
+    Comment newComment = new Comment(null, comment, book);
     Comment saved = commentRepository.save(newComment);
     return Optional.of(CommentDto.from(saved));
   }

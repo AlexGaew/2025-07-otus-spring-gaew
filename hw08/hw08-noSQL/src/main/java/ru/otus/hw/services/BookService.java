@@ -4,7 +4,6 @@ import ru.otus.hw.dto.BookDto;
 
 import java.util.List;
 import java.util.Optional;
-import ru.otus.hw.models.Genre;
 
 public interface BookService {
 
@@ -12,9 +11,9 @@ public interface BookService {
 
   List<BookDto> findAll();
 
-  BookDto insert(String title, String authorName, List<Genre> genres);
+  BookDto insert(String title, String authorId, List<String> genresIds);
 
-  BookDto update(String id, String title,   String authorName, List<Genre> genres);
+  BookDto update(String id, String title, String authorId, List<String> genresIds);
 
   void deleteById(String id);
 }

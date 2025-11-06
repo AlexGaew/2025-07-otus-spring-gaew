@@ -1,6 +1,5 @@
 package ru.otus.hw.models;
 
-import java.util.Arrays;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,9 +23,9 @@ public class Book {
 
   private List<Genre> genres;
 
-  public Book(String title, Author author, Genre... genres) {
+  public Book(String title, Author author, List<Genre> genres) {
     this.title = title;
     this.author = author;
-    this.genres = Arrays.asList(genres);
+    this.genres = genres;
   }
 }

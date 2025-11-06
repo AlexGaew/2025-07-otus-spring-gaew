@@ -3,11 +3,12 @@ package ru.otus.hw.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.otus.hw.dto.BookDto;
-import ru.otus.hw.models.Author;
+import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.models.Book;
-import ru.otus.hw.models.Genre;
+import ru.otus.hw.repositories.AuthorRepository;
 import ru.otus.hw.repositories.BookRepository;
 import ru.otus.hw.repositories.CommentRepository;
+import ru.otus.hw.repositories.GenreRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,6 +18,10 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 @RequiredArgsConstructor
 @Service
 public class BookServiceImpl implements BookService {
+
+  private final AuthorRepository authorRepository;
+
+  private final GenreRepository genreRepository;
 
   private final BookRepository bookRepository;
 
@@ -36,28 +41,35 @@ public class BookServiceImpl implements BookService {
   }
 
   @Override
-  public BookDto insert(String title, String authorName, List<Genre> genres) {
-
-    return save(null, title, authorName, genres);
+  public BookDto insert(String title, String authorId, List<String> genresIds) {
+    return save(null, title, authorId, genresIds);
   }
 
   @Override
-  public BookDto update(String id, String title, String authorName, List<Genre> genres) {
-    return save(id, title, authorName, genres);
+  public BookDto update(String id, String title, String authorId, List<String> genresIds) {
+    return save(id, title, authorId, genresIds);
   }
 
   @Override
   public void deleteById(String bookId) {
-    var comments = commentRepository.findByBookId(bookId);
-    commentRepository.deleteAll(comments);
+    commentRepository.deleteByBookId(bookId);
     bookRepository.deleteById(bookId);
   }
 
-  private BookDto save(String id, String title, String authorName, List<Genre> genres) {
-    if (isEmpty(genres)) {
-      throw new IllegalArgumentException("Genres must not be null");
+  private BookDto save(String id, String title, String authorId, List<String> genresIds) {
+    if (isEmpty(genresIds)) {
+      throw new IllegalArgumentException("Genres ids must not be null");
     }
-    var author = new Author(authorName);
+
+    var author = authorRepository.findById(authorId)
+        .orElseThrow(() -> new EntityNotFoundException("Author with id %s not found".formatted(authorId)));
+
+    var genres = genreRepository.findAllById(genresIds);
+
+    if (isEmpty(genres) || genresIds.size() != genres.size()) {
+      throw new EntityNotFoundException("One or all genres with ids %s not found".formatted(genresIds));
+    }
+
     var book = new Book(id, title, author, genres);
     var bookSaved = bookRepository.save(book);
 
