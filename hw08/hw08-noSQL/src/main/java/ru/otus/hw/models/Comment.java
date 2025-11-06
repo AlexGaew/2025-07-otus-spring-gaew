@@ -22,5 +22,4 @@ public class Comment {
 
   @DBRef
   private Book book;
-
 }

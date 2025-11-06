@@ -133,7 +133,6 @@ public class BookServiceImplTest {
 
   }
 
-
   private static List<Book> getDbBooks(List<Author> dbAuthors, List<Genre> dbGenres) {
     return IntStream.range(1, 4).boxed()
         .map(id -> new Book(

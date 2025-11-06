@@ -10,5 +10,3 @@ public class CommentConverter {
     return "Id: %s, Comment: %s".formatted(comment.id(), comment.comment());
   }
 }
-
-

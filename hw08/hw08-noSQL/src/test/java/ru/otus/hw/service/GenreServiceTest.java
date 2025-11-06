@@ -9,7 +9,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import ru.otus.hw.models.Genre;
 import ru.otus.hw.repositories.GenreRepository;
@@ -18,7 +17,7 @@ import ru.otus.hw.services.GenreServiceImpl;
 
 @DataMongoTest
 @Import(GenreServiceImpl.class)
-class GenreRepositoryTest {
+class GenreServiceImplTest {
 
   @Autowired
   private GenreRepository genreRepository;

@@ -11,5 +11,4 @@ public interface CommentService {
   List<CommentDto> findAllById(String bookId);
 
   Optional<CommentDto> addComment(String bookId, String comment);
-
 }

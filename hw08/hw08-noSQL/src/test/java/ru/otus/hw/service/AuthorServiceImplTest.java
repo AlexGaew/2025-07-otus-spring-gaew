@@ -19,7 +19,7 @@ import ru.otus.hw.services.AuthorServiceImpl;
 
 @DataMongoTest
 @Import(AuthorServiceImpl.class)
-class AuthorRepositoryTest {
+class AuthorServiceImplTest {
 
   @Autowired
   private AuthorService authorService;
