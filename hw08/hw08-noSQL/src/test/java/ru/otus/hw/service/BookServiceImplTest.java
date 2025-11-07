@@ -13,13 +13,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Genre;
-import ru.otus.hw.repositories.AuthorRepository;
-import ru.otus.hw.repositories.BookRepository;
-import ru.otus.hw.repositories.GenreRepository;
 import ru.otus.hw.services.AuthorServiceImpl;
 import ru.otus.hw.services.BookService;
 import ru.otus.hw.services.BookServiceImpl;
@@ -30,13 +28,7 @@ import ru.otus.hw.services.GenreServiceImpl;
 public class BookServiceImplTest {
 
   @Autowired
-  private BookRepository bookRepository;
-
-  @Autowired
-  private AuthorRepository authorRepository;
-
-  @Autowired
-  private GenreRepository genreRepository;
+  private MongoTemplate mongoTemplate;
 
   @Autowired
   private BookService bookService;
@@ -52,14 +44,16 @@ public class BookServiceImplTest {
     dbAuthors = getDbAuthors();
     dbGenres = getDbGenres();
     dbBooks = getDbBooks();
-    authorRepository.saveAll(dbAuthors);
-    genreRepository.saveAll(dbGenres);
-    bookRepository.saveAll(dbBooks);
+    mongoTemplate.insertAll(dbAuthors);
+    mongoTemplate.insertAll(dbGenres);
+    mongoTemplate.insertAll(dbBooks);
   }
 
   @AfterEach
   void cleanUp() {
-    bookRepository.deleteAll();
+    mongoTemplate.dropCollection(Author.class);
+    mongoTemplate.dropCollection(Genre.class);
+    mongoTemplate.dropCollection(Book.class);
   }
 
 
@@ -73,7 +67,7 @@ public class BookServiceImplTest {
         .matches(book -> !book.id().isEmpty())
         .usingRecursiveComparison().ignoringExpectedNullFields().isEqualTo(expectedBook);
 
-    Book actualBook = bookRepository.findById(returnedBook.id()).get();
+    Book actualBook = mongoTemplate.findById(returnedBook.id(), Book.class);
     assertThat(actualBook).isNotNull();
     assertThat(actualBook.getId()).isEqualTo(returnedBook.id());
     assertThat(actualBook.getTitle()).isEqualTo(returnedBook.title());
@@ -113,7 +107,7 @@ public class BookServiceImplTest {
 
     BookDto saveBook = bookService.update("1", "BookTitle_105000", "1", List.of("1", "2"));
 
-    Book actualBook = bookRepository.findById(saveBook.id()).get();
+    Book actualBook = mongoTemplate.findById(saveBook.id(), Book.class);
     assertThat(actualBook).isNotNull();
     assertThat(actualBook.getId()).isEqualTo(expectedBook.getId());
     assertThat(actualBook.getTitle()).isEqualTo(expectedBook.getTitle());

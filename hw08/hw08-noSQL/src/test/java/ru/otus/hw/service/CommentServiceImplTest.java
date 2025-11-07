@@ -2,7 +2,6 @@ package ru.otus.hw.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.AfterEach;
@@ -12,15 +11,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.otus.hw.dto.CommentDto;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Comment;
 import ru.otus.hw.models.Genre;
-import ru.otus.hw.repositories.AuthorRepository;
-import ru.otus.hw.repositories.BookRepository;
-import ru.otus.hw.repositories.CommentRepository;
-import ru.otus.hw.repositories.GenreRepository;
 import ru.otus.hw.services.CommentService;
 import ru.otus.hw.services.CommentServiceImpl;
 
@@ -29,16 +25,7 @@ import ru.otus.hw.services.CommentServiceImpl;
 public class CommentServiceImplTest {
 
   @Autowired
-  private CommentRepository commentRepository;
-
-  @Autowired
-  private BookRepository bookRepository;
-
-  @Autowired
-  private AuthorRepository authorRepository;
-
-  @Autowired
-  private GenreRepository genreRepository;
+  private MongoTemplate mongoTemplate;
 
   @Autowired
   private CommentService commentService;
@@ -58,12 +45,20 @@ public class CommentServiceImplTest {
     dbGenres = getDbGenres();
     dbBooks = getDbBooks();
     dbComments = getDbComments();
+    mongoTemplate.insertAll(dbAuthors);
+    mongoTemplate.insertAll(dbGenres);
+    mongoTemplate.insertAll(dbBooks);
+    mongoTemplate.insertAll(dbComments);
 
-    authorRepository.saveAll(dbAuthors);
-    genreRepository.saveAll(dbGenres);
-    bookRepository.saveAll(dbBooks);
-    commentRepository.saveAll(dbComments);
   }
+  @AfterEach
+  void cleanUp() {
+    mongoTemplate.dropCollection(Genre.class);
+    mongoTemplate.dropCollection(Book.class);
+    mongoTemplate.dropCollection(Comment.class);
+    mongoTemplate.dropCollection(Author.class);
+  }
+
 
   @DisplayName("должен найти все комментарии по id книги")
   @Test

@@ -4,14 +4,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.stream.IntStream;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.otus.hw.models.Genre;
-import ru.otus.hw.repositories.GenreRepository;
 import ru.otus.hw.services.GenreService;
 import ru.otus.hw.services.GenreServiceImpl;
 
@@ -20,7 +21,7 @@ import ru.otus.hw.services.GenreServiceImpl;
 class GenreServiceImplTest {
 
   @Autowired
-  private GenreRepository genreRepository;
+  private MongoTemplate mongoTemplate;
 
   @Autowired
   private GenreService genreService;
@@ -30,28 +31,32 @@ class GenreServiceImplTest {
   @BeforeEach
   void setUp() {
     dbGenres = getDbGenres();
-    genreRepository.saveAll(dbGenres);
+  }
+
+  @AfterEach
+  void cleanUp() {
+    mongoTemplate.dropCollection(Genre.class);
   }
 
   @DisplayName("должен загружать жанры по ids")
   @Test
   void shouldReturnCorrectGenresByIds() {
-    var expectedGenres = getDbGenres();
-    List<String> ids = expectedGenres.stream()
+    List<String> ids = getDbGenres().stream()
         .map(Genre::getId)
         .toList();
-    var actualGenres = genreService.findAllGenresByIds(ids);
-    assertThat(actualGenres).usingRecursiveComparison()
-        .isEqualTo(expectedGenres);
+   List<Genre> insertGenres = mongoTemplate.insertAll(getDbGenres()).stream().toList();
+    var expectedGenres = genreService.findAllGenresByIds(ids);
+    assertThat(expectedGenres).usingRecursiveComparison()
+        .isEqualTo(insertGenres);
   }
 
   @DisplayName("должен загружать список всех жанров")
   @Test
   void shouldReturnCorrectGenresList() {
-    var actualGenres = genreService.findAll();
-    var expectedGenres = dbGenres;
+    List<Genre> insertGenres = mongoTemplate.insertAll(getDbGenres()).stream().toList();
+    var expectedGenres = genreService.findAll();;
 
-    assertThat(actualGenres).usingRecursiveComparison()
+    assertThat(insertGenres).usingRecursiveComparison()
         .isEqualTo(expectedGenres);
   }
 

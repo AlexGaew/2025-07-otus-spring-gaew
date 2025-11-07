@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.stream.IntStream;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,8 +13,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.otus.hw.models.Author;
-import ru.otus.hw.repositories.AuthorRepository;
 import ru.otus.hw.services.AuthorService;
 import ru.otus.hw.services.AuthorServiceImpl;
 
@@ -25,14 +26,19 @@ class AuthorServiceImplTest {
   private AuthorService authorService;
 
   @Autowired
-  private AuthorRepository authorRepository;
+  private MongoTemplate mongoTemplate;
 
   private List<Author> dbAuthors;
 
   @BeforeEach
   void setUp() {
     dbAuthors = getDbAuthors();
-    authorRepository.saveAll(dbAuthors);
+    mongoTemplate.insertAll(dbAuthors);
+  }
+
+  @AfterEach
+  void cleanUp() {
+    mongoTemplate.dropCollection(Author.class);
   }
 
   @DisplayName("должен загружать автора по id")
