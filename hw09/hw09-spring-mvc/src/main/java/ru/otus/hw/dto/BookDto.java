@@ -1,9 +1,24 @@
 package ru.otus.hw.dto;
 
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.otus.hw.models.Book;
 
-public record BookDto(long id, String title, AuthorDto author, List<GenreDto> genres) {
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class BookDto {
+
+  private long id;
+
+  private String title;
+
+  private AuthorDto author;
+
+  private List<GenreDto> genres;
+
 
   public static BookDto from(Book book) {
     return new BookDto(
