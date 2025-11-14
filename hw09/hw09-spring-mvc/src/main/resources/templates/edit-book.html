@@ -9,14 +9,12 @@
 
 <form th:action="@{/book/{id}/edit(id=${bookRequest.id})}" th:object="${bookRequest}" method="post" style="width: 300px;">
 
-  <!-- Название -->
   <div style="margin-bottom: 10px;">
     <label>Название:</label><br>
     <input type="text" th:field="*{title}" style="width: 100%; padding: 5px;">
     <div th:if="${#fields.hasErrors('title')}" th:errors="*{title}" style="color: red;"></div>
   </div>
 
-  <!-- Автор -->
   <div style="margin-bottom: 10px;">
     <label>Автор:</label><br>
     <select th:field="*{authorId}" style="width: 100%; padding: 5px;">
@@ -27,7 +25,6 @@
     <div th:if="${#fields.hasErrors('authorId')}" th:errors="*{authorId}" style="color: red;"></div>
   </div>
 
-  <!-- Жанры -->
   <div style="margin-bottom: 15px;">
     <label>Жанры:</label><br>
     <div style="border: 1px solid #ccc; padding: 10px; max-height: 150px; overflow-y: auto;">
