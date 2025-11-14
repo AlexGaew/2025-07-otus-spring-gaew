@@ -10,7 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +21,6 @@ import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.CommentDto;
 import ru.otus.hw.dto.GenreDto;
 import ru.otus.hw.exceptions.NotFoundException;
-import ru.otus.hw.models.Author;
 import ru.otus.hw.services.AuthorService;
 import ru.otus.hw.services.BookService;
 import ru.otus.hw.services.CommentService;
@@ -73,7 +71,7 @@ public class BookControllerTest {
   void showCommentsBook() throws Exception {
 
     given(commentService.findAllById(1L)).willReturn(List.of(commentDto));
-    given(bookService.findById(1L)).willReturn(Optional.of(bookDto));
+    given(bookService.findById(1L)).willReturn(bookDto);
 
     mvc.perform(get("/comments-book/{bookId}", 1L))
         .andExpect(status().isOk())
@@ -134,14 +132,14 @@ public class BookControllerTest {
   @Test
   void showEditForm() throws Exception {
 
-    given(bookService.findById(1L)).willReturn(Optional.of(bookDto));
+    given(bookService.findById(1L)).willReturn(bookDto);
     given(authorService.findAll()).willReturn(List.of(authorDto));
     given(genreService.findAll()).willReturn(List.of(genreDto));
 
     mvc.perform(get("/book/{id}/edit", 1L))
         .andExpect(status().isOk())
         .andExpect(view().name("edit-book"))
-        .andExpect(model().attributeExists("book"))
+        .andExpect(model().attributeExists("bookRequest"))
         .andExpect(model().attributeExists("authors"))
         .andExpect(model().attributeExists("genres"));
   }

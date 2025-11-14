@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
+import ru.otus.hw.exceptions.NotFoundException;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.repositories.AuthorRepository;
 import ru.otus.hw.repositories.BookRepository;
@@ -30,9 +31,9 @@ public class BookServiceImpl implements BookService {
 
   @Override
   @Transactional(readOnly = true)
-  public Optional<BookDto> findById(long id) {
-    var book = bookRepository.findById(id);
-    return book.map(BookDto::from);
+  public BookDto findById(long id) {
+    var book = bookRepository.findById(id).orElseThrow(() -> new NotFoundException("Book not found"));
+    return BookDto.from(book);
   }
 
   @Override

@@ -7,39 +7,42 @@
 <body>
 <h2>Редактировать книгу</h2>
 
-<form th:action="@{/book/{id}/edit(id=${book.id})}" method="post" style="width: 300px;">
+<form th:action="@{/book/{id}/edit(id=${bookRequest.id})}" th:object="${bookRequest}" method="post" style="width: 300px;">
+
+  <!-- Название -->
   <div style="margin-bottom: 10px;">
     <label>Название:</label><br>
-    <input type="text" name="title" style="width: 100%; padding: 5px;" th:value="${book.title}">
+    <input type="text" th:field="*{title}" style="width: 100%; padding: 5px;">
+    <div th:if="${#fields.hasErrors('title')}" th:errors="*{title}" style="color: red;"></div>
   </div>
 
+  <!-- Автор -->
   <div style="margin-bottom: 10px;">
     <label>Автор:</label><br>
-    <select name="authorId" style="width: 100%; padding: 5px;">
+    <select th:field="*{authorId}" style="width: 100%; padding: 5px;">
       <option th:each="author : ${authors}"
               th:value="${author.id}"
-              th:text="${author.fullName}"
-              th:selected="${author.id == book.author.id}"></option>
+              th:text="${author.fullName}"></option>
     </select>
+    <div th:if="${#fields.hasErrors('authorId')}" th:errors="*{authorId}" style="color: red;"></div>
   </div>
 
+  <!-- Жанры -->
   <div style="margin-bottom: 15px;">
     <label>Жанры:</label><br>
     <div style="border: 1px solid #ccc; padding: 10px; max-height: 150px; overflow-y: auto;">
       <div th:each="genre : ${genres}" style="margin-bottom: 5px;">
         <input type="checkbox"
                th:id="${'genre_' + genre.id}"
-               th:name="genreIds"
-               th:value="${genre.id}"
-               th:checked="${book.genres.contains(genre)}">
+               th:field="*{genreIds}"
+               th:value="${genre.id}">
         <label th:for="${'genre_' + genre.id}" th:text="${genre.name}"></label>
       </div>
     </div>
+    <div th:if="${#fields.hasErrors('genreIds')}" th:errors="*{genreIds}" style="color: red;"></div>
   </div>
 
-  <button type="submit" style="padding: 8px 15px; background-color: #4CAF50; color: white; border: none; cursor: pointer;">
-    Сохранить изменения
-  </button>
+  <button type="submit">Сохранить изменения</button>
 </form>
 </body>
 </html>

@@ -10,13 +10,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import ru.otus.hw.dto.AuthorDto;
-import ru.otus.hw.dto.BookCreateRequest;
+import ru.otus.hw.dto.BookRequestDto;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.CommentDto;
 import ru.otus.hw.dto.GenreDto;
-import ru.otus.hw.exceptions.NotFoundException;
 import ru.otus.hw.services.AuthorService;
 import ru.otus.hw.services.BookService;
 import ru.otus.hw.services.CommentService;
@@ -44,7 +42,7 @@ public class BookController {
   @GetMapping("/comments-book/{bookId}")
   public String showCommentsBook(@PathVariable("bookId") long id, Model model) {
     List<CommentDto> comments = commentService.findAllById(id);
-    BookDto book = bookService.findById(id).orElseThrow(() -> new NotFoundException("Book not found"));
+    BookDto book = bookService.findById(id);
     model.addAttribute("comments", comments);
     model.addAttribute("book", book);
     return "book-info";
@@ -56,16 +54,25 @@ public class BookController {
     List<GenreDto> genres = genreService.findAll();
     model.addAttribute("authors", authors);
     model.addAttribute("genres", genres);
-    model.addAttribute("bookRequest", new BookCreateRequest());
+
+    if (!model.containsAttribute("bookRequest")) {
+      model.addAttribute("bookRequest", new BookRequestDto());
+    }
+
     return "create-book";
   }
 
   @GetMapping("/book/{id}/edit")
   public String showEditForm(@PathVariable("id") long id, Model model) {
-    BookDto book = bookService.findById(id).orElseThrow(() -> new NotFoundException("Book not found"));
     List<AuthorDto> authors = authorService.findAll();
     List<GenreDto> genres = genreService.findAll();
-    model.addAttribute("book", book);
+
+    if (!model.containsAttribute("bookRequest")) {
+      BookDto book = bookService.findById(id);
+      BookRequestDto bookRequest = BookRequestDto.from(book);
+      model.addAttribute("bookRequest", bookRequest);
+    }
+
     model.addAttribute("authors", authors);
     model.addAttribute("genres", genres);
     return "edit-book";
@@ -73,26 +80,27 @@ public class BookController {
 
   @PostMapping("/book/{id}/edit")
   public String updateBook(
+      @Valid @ModelAttribute("bookRequest") BookRequestDto bookRequest,
+      BindingResult bindingResult,
       @PathVariable("id") long id,
-      @RequestParam String title,
-      @RequestParam long authorId,
-      @RequestParam List<Long> genreIds) {
-    bookService.update(id, title, authorId, genreIds);
+      Model model) {
+
+    if (bindingResult.hasErrors()) {
+      return showEditForm(id, model);
+    }
+
+    bookService.update(id, bookRequest.getTitle(), bookRequest.getAuthorId(), bookRequest.getGenreIds());
     return "redirect:/books";
   }
 
   @PostMapping("/book/create")
   public String createBook(
-      @Valid @ModelAttribute("bookRequest") BookCreateRequest bookRequest,
+      @Valid @ModelAttribute("bookRequest") BookRequestDto bookRequest,
       BindingResult bindingResult,
       Model model) {
 
     if (bindingResult.hasErrors()) {
-      List<AuthorDto> authors = authorService.findAll();
-      List<GenreDto> genres = genreService.findAll();
-      model.addAttribute("authors", authors);
-      model.addAttribute("genres", genres);
-      return "create-book";
+      return showCreateForm(model);
     }
 
     bookService.insert(bookRequest.getTitle(), bookRequest.getAuthorId(), bookRequest.getGenreIds());
