@@ -6,7 +6,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -27,7 +26,7 @@ public class CommentControllerTest {
 
   @Test
   void getCommentById() throws Exception {
-    Optional<CommentDto> comment = Optional.of(new CommentDto(1, "comment", 1));
+    CommentDto comment = new CommentDto(1, "comment", 1);
     given(commentService.findCommentById(1)).willReturn(comment);
 
     mvc.perform(get("/comment/{id}", 1))

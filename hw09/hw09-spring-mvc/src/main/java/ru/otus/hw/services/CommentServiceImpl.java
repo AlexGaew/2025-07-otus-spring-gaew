@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.hw.dto.CommentDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
+import ru.otus.hw.exceptions.NotFoundException;
 import ru.otus.hw.models.Comment;
 import ru.otus.hw.repositories.BookRepository;
 import ru.otus.hw.repositories.CommentRepository;
@@ -21,9 +22,9 @@ public class CommentServiceImpl implements CommentService {
 
   @Override
   @Transactional(readOnly = true)
-  public Optional<CommentDto> findCommentById(long id) {
-    var comment = commentRepository.findById(id);
-    return comment.map(CommentDto::from);
+  public CommentDto findCommentById(long id) {
+    var comment = commentRepository.findById(id).orElseThrow(() -> new NotFoundException("Comment not found"));
+    return CommentDto.from(comment);
   }
 
   @Override

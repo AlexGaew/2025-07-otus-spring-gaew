@@ -13,7 +13,6 @@ import ru.otus.hw.repositories.CommentRepository;
 import ru.otus.hw.repositories.GenreRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.springframework.util.CollectionUtils.isEmpty;
 

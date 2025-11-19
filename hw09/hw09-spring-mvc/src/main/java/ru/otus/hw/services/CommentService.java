@@ -6,7 +6,7 @@ import ru.otus.hw.dto.CommentDto;
 
 public interface CommentService {
 
-  Optional<CommentDto> findCommentById(long id);
+  CommentDto findCommentById(long id);
 
   List<CommentDto> findAllById(Long bookId);
 

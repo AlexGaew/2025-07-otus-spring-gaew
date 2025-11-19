@@ -6,7 +6,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import ru.otus.hw.dto.CommentDto;
-import ru.otus.hw.exceptions.NotFoundException;
 import ru.otus.hw.services.CommentService;
 
 @Controller
@@ -17,8 +16,7 @@ public class CommentController {
 
   @GetMapping("/comment/{id}")
   public String getComment(@PathVariable("id") long id, Model model) {
-    CommentDto comment = commentService.findCommentById(id)
-        .orElseThrow(() -> new NotFoundException("Comment not found"));
+    CommentDto comment = commentService.findCommentById(id);
     model.addAttribute("comment", comment);
     return "comment";
   }
