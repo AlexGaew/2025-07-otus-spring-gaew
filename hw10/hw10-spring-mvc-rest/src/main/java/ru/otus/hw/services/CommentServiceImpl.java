@@ -31,6 +31,11 @@ public class CommentServiceImpl implements CommentService {
   @Transactional(readOnly = true)
   public List<CommentDto> findAllById(Long bookId) {
     var comments = commentRepository.findByBookId(bookId);
+
+    if (comments.isEmpty()) {
+      throw new NotFoundException("Comment not found");
+    }
+
     return CommentDto.fromList(comments);
   }
 

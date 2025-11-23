@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.hw.dto.AuthorDto;
+import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.repositories.AuthorRepository;
 
@@ -20,6 +21,11 @@ public class AuthorServiceImpl implements AuthorService {
   @Transactional(readOnly = true)
   public List<AuthorDto> findAll() {
     List<Author> authors = authorRepository.findAll();
+
+    if (authors.isEmpty()) {
+      throw new EntityNotFoundException("Authors not found");
+    }
+
     return authors.stream().map(AuthorDto::from)
         .toList();
   }
