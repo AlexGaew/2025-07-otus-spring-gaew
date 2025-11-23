@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Книги</title>
+</head>
+<body>
+<h1>Список книг</h1>
+<table style="border: 2px solid black; border-collapse: collapse;">
+  <tr>
+    <th style="border: 1px solid black">№</th>
+    <th style="border: 1px solid black">Описание</th>
+    <th style="border: 1px solid black">Автор</th>
+    <th style="border: 1px solid black">Жанры</th>
+    <th style="border: 1px solid black">Действия</th>
+  </tr>
+  <tr th:each="book, iterStat : ${books}">
+    <td style="border: 1px solid black" th:text="${iterStat.count}"></td>
+    <td style="border: 1px solid black" th:text="${book.title}"></td>
+    <td style="border: 1px solid black" th:text="${book.author.fullName}"></td>
+    <td style="border: 1px solid black; padding: 8px;">
+      <span th:each="genre, iterStat : ${book.genres}">
+        <span th:text="${genre.name}"></span>
+        <span th:if="${!iterStat.last}">,</span>
+      </span>
+    </td>
+    <td style="border: 1px solid black; text-align: center;">
+      <a th:href="@{/book/{id}/edit(id=${book.id})}" style="text-decoration: none;">
+        <button style="padding: 5px 10px; background-color: #2196F3; color: white; border: none; border-radius: 3px; cursor: pointer;">
+          Редактировать
+        </button>
+      </a>
+      <form th:action="@{/book/{id}/delete(id=${book.id})}" method="post" style="display: inline;">
+        <button type="submit" style="padding: 5px 10px; background-color: #f44336; color: white; border: none; border-radius: 3px; cursor: pointer;">
+          Удалить
+        </button>
+      </form>
+      <form th:action="@{/comments-book/{id}(id=${book.id})}" method="get" style="display: inline;">
+        <button type="submit" style="padding: 5px 10px; background-color: green; color: white; border: none; border-radius: 3px; cursor: pointer;">
+          Информация
+        </button>
+      </form>
+    </td>
+
+  </tr>
+</table>
+
+<div style="margin-top: 20px;">
+    <a th:href="@{/book/create}" style="text-decoration: none;">
+    <button style="padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+      Создать книгу
+    </button>
+  </a>
+</div>
+<div style="margin-top: 20px;">
+    <a th:href="@{/authors}" style="text-decoration: none;">
+    <button style="padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+      Список авторов
+    </button>
+  </a>
+</div>
+
+<div style="margin-top: 20px;">
+  <a th:href="@{/genres}" style="text-decoration: none;">
+    <button
+        style="padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+      Список жанров
+    </button>
+  </a>
+</div>
+
+</body>
+</html>
