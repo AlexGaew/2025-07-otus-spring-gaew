@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Авторы</title>
+</head>
+<body>
+<h1>Список авторов</h1>
+<table style="border: 2px solid black; border-collapse: collapse;">
+  <thead>
+    <tr>
+      <th style="border: 1px solid black">ID</th>
+      <th style="border: 1px solid black">Имя</th>
+    </tr>
+  </thead>
+  <tbody id="authors-tbody">
+  </tbody>
+</table>
+
+<div style="margin-top: 20px;">
+  <a href="/books" style="text-decoration: none;">
+    <button style="padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+      Список книг
+    </button>
+  </a>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    loadAuthors();
+  });
+
+  function loadAuthors() {
+    fetch('/api/v1/author')
+      .then(response => response.json())
+      .then(authors => {
+        renderAuthors(authors);
+      });
+  }
+
+  function renderAuthors(authors) {
+    const tbody = document.getElementById('authors-tbody');
+    tbody.innerHTML = '';
+
+    authors.forEach(author => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td style="border: 1px solid black">${author.id}</td>
+        <td style="border: 1px solid black">${author.fullName}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+</script>
+
+</body>
+</html>
