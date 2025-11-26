@@ -13,7 +13,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
@@ -28,7 +30,7 @@ import ru.otus.hw.services.GenreServiceImpl;
 public class BookServiceImplTest {
 
   @Autowired
-  private MongoTemplate mongoTemplate;
+  private ReactiveMongoTemplate mongoTemplate;
 
   @Autowired
   private BookService bookService;
@@ -44,16 +46,16 @@ public class BookServiceImplTest {
     dbAuthors = getDbAuthors();
     dbGenres = getDbGenres();
     dbBooks = getDbBooks();
-    mongoTemplate.insertAll(dbAuthors);
-    mongoTemplate.insertAll(dbGenres);
-    mongoTemplate.insertAll(dbBooks);
+    mongoTemplate.insertAll(dbAuthors).blockLast();
+    mongoTemplate.insertAll(dbGenres).blockLast();
+    mongoTemplate.insertAll(dbBooks).blockLast();
   }
 
   @AfterEach
   void cleanUp() {
-    mongoTemplate.dropCollection(Author.class);
-    mongoTemplate.dropCollection(Genre.class);
-    mongoTemplate.dropCollection(Book.class);
+    mongoTemplate.dropCollection(Author.class).block();
+    mongoTemplate.dropCollection(Genre.class).block();
+    mongoTemplate.dropCollection(Book.class).block();
   }
 
 
@@ -61,18 +63,19 @@ public class BookServiceImplTest {
   @Test
   void shouldInsertBook() {
     var expectedBook = new Book("BookTitle_10500", dbAuthors.get(0), List.of(dbGenres.get(0), dbGenres.get(1)));
-    var returnedBook = bookService.insert("BookTitle_10500", "1", List.of("1", "2"));
+    var returnedBook = bookService.insert(expectedBook.getTitle(), expectedBook.getAuthor().getId(),
+        expectedBook.getGenres().stream().map(Genre::getId).toList()).block();
 
     assertThat(returnedBook).isNotNull()
-        .matches(book -> !book.id().isEmpty())
+        .matches(book -> !book.getId().isEmpty())
         .usingRecursiveComparison().ignoringExpectedNullFields().isEqualTo(expectedBook);
 
-    Book actualBook = mongoTemplate.findById(returnedBook.id(), Book.class);
+    Book actualBook = mongoTemplate.findById(returnedBook.getId(), Book.class).block();
     assertThat(actualBook).isNotNull();
-    assertThat(actualBook.getId()).isEqualTo(returnedBook.id());
-    assertThat(actualBook.getTitle()).isEqualTo(returnedBook.title());
-    assertThat(actualBook.getAuthor().getId()).isEqualTo(returnedBook.author().getId());
-    assertThat(actualBook.getGenres()).hasSize(returnedBook.genres().size());
+    assertThat(actualBook.getId()).isEqualTo(returnedBook.getId());
+    assertThat(actualBook.getTitle()).isEqualTo(returnedBook.getTitle());
+    assertThat(actualBook.getAuthor().getId()).isEqualTo(returnedBook.getAuthor().id());
+    assertThat(actualBook.getGenres()).hasSize(returnedBook.getGenres().size());
 
   }
 
@@ -80,24 +83,24 @@ public class BookServiceImplTest {
   @ParameterizedTest
   @MethodSource("getDbBooks")
   void shouldReturnCorrectBookById(Book expectedBook) {
+    var actualBook = bookService.findById(expectedBook.getId()).block();
+    var expectedDto = BookDto.from(expectedBook);
 
-    var actualBook = bookService.findById(expectedBook.getId());
-
-    assertThat(actualBook).isPresent()
-        .get()
+    assertThat(actualBook)
         .usingRecursiveComparison()
-        .isEqualTo(expectedBook);
+        .isEqualTo(expectedDto);
   }
 
   @DisplayName("должен загружать список всех книг")
   @Test
   void shouldReturnCorrectBooksList() {
-    var actualBooks = bookService.findAll();
-    var expectedBooks = dbBooks;
+    var expectedBooks = dbBooks.stream()
+        .map(BookDto::from)
+        .toList();
 
-    assertThat(actualBooks).usingRecursiveComparison()
-        .isEqualTo(expectedBooks);
-    actualBooks.forEach(System.out::println);
+    StepVerifier.create(bookService.findAll())
+        .expectNextSequence(expectedBooks)
+        .verifyComplete();
   }
 
   @DisplayName("должен сохранять измененную книгу")
@@ -105,9 +108,9 @@ public class BookServiceImplTest {
   void shouldSaveUpdatedBook() {
     var expectedBook = new Book("1", "BookTitle_105000", dbAuthors.get(0), List.of(dbGenres.get(0), dbGenres.get(1)));
 
-    BookDto saveBook = bookService.update("1", "BookTitle_105000", "1", List.of("1", "2"));
+    BookDto saveBook = bookService.update("1", "BookTitle_105000", "1", List.of("1", "2")).block();
 
-    Book actualBook = mongoTemplate.findById(saveBook.id(), Book.class);
+    Book actualBook = mongoTemplate.findById(saveBook.getId(), Book.class).block();
     assertThat(actualBook).isNotNull();
     assertThat(actualBook.getId()).isEqualTo(expectedBook.getId());
     assertThat(actualBook.getTitle()).isEqualTo(expectedBook.getTitle());
@@ -119,12 +122,11 @@ public class BookServiceImplTest {
   @DisplayName("должен удалять книгу по id ")
   @Test
   void shouldDeleteBook() {
+    assertThat(bookService.findById("1").block()).isNotNull();
 
-    assertThat(bookService.findById("1")).isNotNull();
+    bookService.deleteById("1").block();
 
-    bookService.deleteById("1");
-    assertThat(bookService.findById("1")).isEmpty();
-
+    assertThat(bookService.findById("1").block()).isNull();
   }
 
   private static List<Book> getDbBooks(List<Author> dbAuthors, List<Genre> dbGenres) {

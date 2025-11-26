@@ -13,7 +13,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import reactor.test.StepVerifier;
+import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.services.AuthorService;
 import ru.otus.hw.services.AuthorServiceImpl;
@@ -26,41 +28,42 @@ class AuthorServiceImplTest {
   private AuthorService authorService;
 
   @Autowired
-  private MongoTemplate mongoTemplate;
+  private ReactiveMongoTemplate mongoTemplate;
 
   private List<Author> dbAuthors;
 
   @BeforeEach
   void setUp() {
     dbAuthors = getDbAuthors();
-    mongoTemplate.insertAll(dbAuthors);
+    mongoTemplate.insertAll(dbAuthors).blockLast();
   }
 
   @AfterEach
   void cleanUp() {
-    mongoTemplate.dropCollection(Author.class);
+    mongoTemplate.dropCollection(Author.class).block();
   }
 
   @DisplayName("должен загружать автора по id")
   @ParameterizedTest
   @MethodSource("getDbAuthors")
   void shouldReturnCorrectAuthorById(Author expectedAuthor) {
-    var actualAuthor = authorService.findById(expectedAuthor.getId());
+    var actualAuthor = authorService.findById(expectedAuthor.getId()).block();
 
-    assertThat(actualAuthor).isPresent()
-        .get()
+    assertThat(actualAuthor)
         .usingRecursiveComparison()
-        .isEqualTo(expectedAuthor);
+        .isEqualTo(AuthorDto.from(expectedAuthor));
   }
 
   @DisplayName("должен загружать список всех авторов")
   @Test
   void shouldReturnCorrectAuthorsList() {
-    var actualAuthors = authorService.findAll();
-    var expectedAuthors = dbAuthors;
+    var expectedAuthors = dbAuthors.stream()
+        .map(AuthorDto::from)
+        .toList();
 
-    assertThat(actualAuthors).usingRecursiveComparison()
-        .isEqualTo(expectedAuthors);
+    StepVerifier.create(authorService.findAll())
+        .expectNextSequence(expectedAuthors)
+        .verifyComplete();
   }
 
   private static List<Author> getDbAuthors() {

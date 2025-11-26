@@ -11,7 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import reactor.test.StepVerifier;
 import ru.otus.hw.dto.CommentDto;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
@@ -25,7 +26,7 @@ import ru.otus.hw.services.CommentServiceImpl;
 public class CommentServiceImplTest {
 
   @Autowired
-  private MongoTemplate mongoTemplate;
+  private ReactiveMongoTemplate mongoTemplate;
 
   @Autowired
   private CommentService commentService;
@@ -45,41 +46,39 @@ public class CommentServiceImplTest {
     dbGenres = getDbGenres();
     dbBooks = getDbBooks();
     dbComments = getDbComments();
-    mongoTemplate.insertAll(dbAuthors);
-    mongoTemplate.insertAll(dbGenres);
-    mongoTemplate.insertAll(dbBooks);
-    mongoTemplate.insertAll(dbComments);
+    mongoTemplate.insertAll(dbAuthors).blockLast();
+    mongoTemplate.insertAll(dbGenres).blockLast();
+    mongoTemplate.insertAll(dbBooks).blockLast();
+    mongoTemplate.insertAll(dbComments).blockLast();
 
   }
   @AfterEach
   void cleanUp() {
-    mongoTemplate.dropCollection(Genre.class);
-    mongoTemplate.dropCollection(Book.class);
-    mongoTemplate.dropCollection(Comment.class);
-    mongoTemplate.dropCollection(Author.class);
+    mongoTemplate.dropCollection(Genre.class).block();
+    mongoTemplate.dropCollection(Book.class).block();
+    mongoTemplate.dropCollection(Comment.class).block();
+    mongoTemplate.dropCollection(Author.class).block();
   }
 
 
   @DisplayName("должен найти все комментарии по id книги")
   @Test
   void shouldFindAllCommentById() {
-
-    var actualComments = dbComments.stream()
+    var expectedComments = dbComments.stream()
+        .filter(c -> c.getBookId().equals(dbBooks.get(0).getId()))
         .map(CommentDto::from)
         .toList();
 
-    var foundComments = commentService.findAllById(dbBooks.get(0).getId());
-
-    assertThat(foundComments).isEqualTo(actualComments);
-
+    StepVerifier.create(commentService.findAllById(dbBooks.get(0).getId()))
+        .expectNextSequence(expectedComments)
+        .verifyComplete();
   }
 
   @DisplayName("должен найти комментарий по id")
   @Test
   void shouldFindCommentsById() {
-    var actualComment = CommentDto.from(dbComments.get(0));
-
-    var expectedComment = commentService.findCommentById(dbComments.get(0).getId()).get();
+    var expectedComment = CommentDto.from(dbComments.get(0));
+    var actualComment = commentService.findCommentById(dbComments.get(0).getId()).block();
 
     assertThat(actualComment)
         .usingRecursiveComparison()
@@ -89,12 +88,13 @@ public class CommentServiceImplTest {
   @DisplayName("должен добавить комментарий к книге по id книги")
   @Test
   void shouldAddCommentByBookId() {
+    var savedComment = commentService.addComment(dbBooks.get(0).getId(), "Add Comment1").block();
+    assertThat(savedComment).isNotNull();
+    assertThat(savedComment.id()).isNotNull();
 
-    var savedComment = commentService.addComment(dbBooks.get(0).getId(), "Add Comment1");
-    var foundComments = commentService.findCommentById(savedComment.get().id());
-
-    assertThat(savedComment.get().comment())
-        .isEqualTo(foundComments.get().comment());
+    var foundComment = commentService.findCommentById(savedComment.id()).block();
+    assertThat(foundComment).isNotNull();
+    assertThat(foundComment.comment()).isEqualTo("Add Comment1");
   }
 
   private static List<Book> getDbBooks(List<Author> dbAuthors, List<Genre> dbGenres) {
@@ -125,9 +125,9 @@ public class CommentServiceImplTest {
         .toList();
   }
 
-  private static List<Comment> getDbComments() {
-    return IntStream.range(1, 7).boxed()
-        .map(id -> new Comment(String.valueOf(id), "Comment_" + id, getDbBooks().get(0)))
+  private List<Comment> getDbComments() {
+    return IntStream.range(1, 4).boxed()
+        .map(id -> new Comment(String.valueOf(id), "Comment_" + id, dbBooks.get(id - 1).getId()))
         .toList();
   }
 }

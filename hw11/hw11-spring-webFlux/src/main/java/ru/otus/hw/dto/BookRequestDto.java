@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.otus.hw.models.Book;
 
 @Data
 @NoArgsConstructor

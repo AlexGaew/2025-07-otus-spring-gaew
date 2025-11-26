@@ -1,136 +1,128 @@
 package ru.otus.hw.controller;
 
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willDoNothing;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.BookRequestDto;
 import ru.otus.hw.dto.GenreDto;
-import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.services.BookService;
 
-@WebMvcTest(BookController.class)
+@WebFluxTest(BookController.class)
 public class BookControllerTest {
 
   @Autowired
-  private MockMvc mvc;
+  private WebTestClient webTestClient;
 
   @MockitoBean
   private BookService bookService;
 
-  @Autowired
-  private ObjectMapper jacksonObjectMapper;
-
   @Test
-  void shouldReturnCorrectBooksList() throws Exception {
-    AuthorDto authorDto = new AuthorDto(1L, "Pushkin");
-    GenreDto genreDto = new GenreDto(1L, "Roman");
-    BookDto bookDto = new BookDto(1L, "Book1", authorDto, List.of(genreDto));
+  void shouldReturnCorrectBooksList() {
+    AuthorDto authorDto = new AuthorDto("1", "Pushkin");
+    GenreDto genreDto = new GenreDto("1", "Roman");
+    BookDto bookDto = new BookDto("1", "Book1", authorDto, List.of(genreDto));
     List<BookDto> books = List.of(bookDto);
 
-    given(bookService.findAll()).willReturn(books);
+    given(bookService.findAll()).willReturn(Flux.fromIterable(books));
 
-    mvc.perform(get("/api/v1/book"))
-        .andExpect(status().isOk())
-        .andExpect(content().json(jacksonObjectMapper.writeValueAsString(books)));
+    webTestClient.get()
+        .uri("/api/v1/book")
+        .exchange()
+        .expectStatus().isOk()
+        .expectBodyList(BookDto.class)
+        .isEqualTo(books);
   }
 
   @Test
-  void shouldReturnCorrectBookById() throws Exception {
-    AuthorDto authorDto = new AuthorDto(1L, "Pushkin");
-    GenreDto genreDto = new GenreDto(1L, "Roman");
-    BookDto bookDto = new BookDto(1L, "Book1", authorDto, List.of(genreDto));
+  void shouldReturnCorrectBookById() {
+    AuthorDto authorDto = new AuthorDto("1", "Pushkin");
+    GenreDto genreDto = new GenreDto("1", "Roman");
+    BookDto bookDto = new BookDto("1", "Book1", authorDto, List.of(genreDto));
 
-    given(bookService.findById(1L)).willReturn(bookDto);
+    given(bookService.findById("1")).willReturn(Mono.just(bookDto));
 
-    mvc.perform(get("/api/v1/book/{id}", 1))
-        .andExpect(status().isOk())
-        .andExpect(content().json(jacksonObjectMapper.writeValueAsString(bookDto)));
+    webTestClient.get()
+        .uri("/api/v1/book/{id}", "1")
+        .exchange()
+        .expectStatus().isOk()
+        .expectBody(BookDto.class)
+        .isEqualTo(bookDto);
   }
 
   @Test
-  void shouldReturnExpectedErrorWhenBookNotFound() throws Exception {
-    given(bookService.findById(1L)).willThrow(EntityNotFoundException.class);
+  void shouldReturnNotFoundWhenBookNotFound() {
+    given(bookService.findById("1")).willReturn(Mono.empty());
 
-    var msg = Map.of("error", "An unexpected error has occurred. Please try again later.");
-
-    mvc.perform(get("/api/v1/book/{id}", 1))
-        .andExpect(status().isNotFound())
-        .andExpect(content().json(jacksonObjectMapper.writeValueAsString(msg)));
+    webTestClient.get()
+        .uri("/api/v1/book/{id}", "1")
+        .exchange()
+        .expectStatus().isNotFound();
   }
 
   @Test
-  void shouldCreateBook() throws Exception {
-    AuthorDto authorDto = new AuthorDto(1L, "Pushkin");
-    GenreDto genreDto = new GenreDto(1L, "Roman");
-    BookDto bookDto = new BookDto(1L, "Book1", authorDto, List.of(genreDto));
+  void shouldCreateBook() {
+    AuthorDto authorDto = new AuthorDto("1", "Pushkin");
+    GenreDto genreDto = new GenreDto("1", "Roman");
+    BookDto bookDto = new BookDto("1", "Book1", authorDto, List.of(genreDto));
 
-    given(bookService.insert("Book1", 1L, List.of(1L))).willReturn(bookDto);
+    given(bookService.insert(eq("Book1"), eq("1"), anyList())).willReturn(Mono.just(bookDto));
 
     BookRequestDto request = new BookRequestDto();
     request.setTitle("Book1");
-    request.setAuthorId(1L);
-    request.setGenreIds(List.of(1L));
+    request.setAuthorId("1");
+    request.setGenreIds(List.of("1"));
 
-    mvc.perform(post("/api/v1/book")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(jacksonObjectMapper.writeValueAsString(request)))
-        .andExpect(status().isCreated())
-        .andExpect(content().json(jacksonObjectMapper.writeValueAsString(bookDto)));
+    webTestClient.post()
+        .uri("/api/v1/book")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(request)
+        .exchange()
+        .expectStatus().isOk()
+        .expectBody(BookDto.class)
+        .isEqualTo(bookDto);
   }
 
   @Test
-  void shouldUpdateBook() throws Exception {
-    AuthorDto authorDto = new AuthorDto(1L, "Pushkin");
-    GenreDto genreDto = new GenreDto(1L, "Roman");
-    BookDto bookDto = new BookDto(1L, "Updated", authorDto, List.of(genreDto));
+  void shouldUpdateBook() {
+    AuthorDto authorDto = new AuthorDto("1", "Pushkin");
+    GenreDto genreDto = new GenreDto("1", "Roman");
+    BookDto bookDto = new BookDto("1", "Updated", authorDto, List.of(genreDto));
 
-    given(bookService.update(1L, "Updated", 1L, List.of(1L))).willReturn(bookDto);
+    given(bookService.update(eq("1"), eq("Updated"), eq("1"), anyList()))
+        .willReturn(Mono.just(bookDto));
 
     BookRequestDto request = new BookRequestDto();
     request.setTitle("Updated");
-    request.setAuthorId(1L);
-    request.setGenreIds(List.of(1L));
+    request.setAuthorId("1");
+    request.setGenreIds(List.of("1"));
 
-    mvc.perform(patch("/api/v1/book/{id}", 1)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(jacksonObjectMapper.writeValueAsString(request)))
-        .andExpect(status().isOk())
-        .andExpect(content().json(jacksonObjectMapper.writeValueAsString(bookDto)));
+    webTestClient.patch()
+        .uri("/api/v1/book/{id}", "1")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(request)
+        .exchange()
+        .expectStatus().isCreated();
   }
 
   @Test
-  void shouldDeleteBook() throws Exception {
-    willDoNothing().given(bookService).deleteById(1L);
+  void shouldDeleteBook() {
+    given(bookService.deleteById("1")).willReturn(Mono.empty());
 
-    mvc.perform(delete("/api/v1/book/{id}", 1))
-        .andExpect(status().isOk());
-  }
-
-  @Test
-  void shouldReturnExpectedErrorWhenDeleteBookNotFound() throws Exception {
-    given(bookService.findById(1L)).willThrow(EntityNotFoundException.class);
-
-    var msg = Map.of("error", "An unexpected error has occurred. Please try again later.");
-
-    mvc.perform(get("/api/v1/book/{id}", 1))
-        .andExpect(status().isNotFound())
-        .andExpect(content().json(jacksonObjectMapper.writeValueAsString(msg)));
+    webTestClient.delete()
+        .uri("/api/v1/book/{id}", "1")
+        .exchange()
+        .expectStatus().isNoContent();
   }
 }

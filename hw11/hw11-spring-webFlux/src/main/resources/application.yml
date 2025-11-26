@@ -9,13 +9,12 @@ spring:
       auto-index-creation: true
 
 
-mongock:
-  #  runner-type: "ApplicationRunner" # default
-  runner-type: "InitializingBean"
-  change-logs-scan-package:
-    - ru.otus.hw.mongock
-  mongo-db:
-    write-concern:
-      journal: false
-    read-concern: local
+#mongock:
+#  runner-type: "InitializingBean"
+#  change-logs-scan-package:
+#    - ru.otus.hw.mongock
+#  mongo-db:
+#    write-concern:
+#      journal: false
+#    read-concern: local
 

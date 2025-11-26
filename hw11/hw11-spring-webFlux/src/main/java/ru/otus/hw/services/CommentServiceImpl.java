@@ -34,7 +34,7 @@ public class CommentServiceImpl implements CommentService {
   public Mono<CommentDto> addComment(String bookId, String comment) {
     return bookRepository.findById(bookId)
         .switchIfEmpty(Mono.error(new EntityNotFoundException("Book not found: " + bookId)))
-        .flatMap(b -> commentRepository.save(new Comment(null, comment, b)))
+        .flatMap(book -> commentRepository.save(new Comment(null, comment, bookId)))
         .map(CommentDto::from);
   }
 }
