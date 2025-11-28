@@ -60,17 +60,25 @@ public class BookServiceImpl implements BookService {
     if (isEmpty(genresIds)) {
       throw new IllegalArgumentException("Genres ids must not be null");
     }
-    return authorRepository.findById(authorId)
-        .switchIfEmpty(Mono.error(new EntityNotFoundException("Author not found")))
-        .flatMap(author -> Flux.fromIterable(genresIds)
-            .flatMap(genreRepository::findById)
-            .collectList()
-            .flatMap(genres -> {
-              if (isEmpty(genres) || genres.size() != genresIds.size()) {
-                return Mono.error(new EntityNotFoundException("Genre not found"));
-              }
-              Book book = new Book(id, title, author, genres);
-              return bookRepository.save(book).map(BookDto::from);
-            }));
+
+    var authorMono = authorRepository.findById(authorId)
+        .switchIfEmpty(Mono.error(new EntityNotFoundException("Author not found")));
+
+    var genresMono = Flux.fromIterable(genresIds)
+        .flatMap(genreRepository::findById)
+        .collectList()
+        .flatMap(genres -> {
+          if (isEmpty(genres) || genres.size() != genresIds.size()) {
+            return Mono.error(new EntityNotFoundException("Genre not found"));
+          }
+          return Mono.just(genres);
+        });
+
+    return Mono.zip(authorMono, genresMono)
+        .flatMap(tuple -> {
+          var book = new Book(id, title, tuple.getT1(), tuple.getT2());
+          return bookRepository.save(book);
+        })
+        .map(BookDto::from);
   }
 }
