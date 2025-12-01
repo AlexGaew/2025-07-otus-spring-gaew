@@ -88,4 +88,25 @@
     </createTable>
   </changeSet>
 
+  <changeSet id="6-create-users" author="alex">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="users"/>
+      </not>
+    </preConditions>
+    <createTable tableName="users">
+      <column name="id" type="BIGSERIAL">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="username" type="TEXT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="password" type="TEXT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="authorities" type="TEXT">
+      </column>
+    </createTable>
+  </changeSet>
+
 </databaseChangeLog>
