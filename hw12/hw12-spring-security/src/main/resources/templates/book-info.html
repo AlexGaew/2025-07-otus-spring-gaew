@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <title>Информация о книге</title>
+</head>
+
+<body>
+<h3>Информация о книге:</h3>
+<table style="border: 2px solid black; border-collapse: collapse; margin-bottom: 20px;">
+  <tr>
+    <th style="border: 1px solid black; padding: 8px;">Название</th>
+    <td style="border: 1px solid black; padding: 8px;" th:text="${book.title}"></td>
+  </tr>
+  <tr>
+    <th style="border: 1px solid black; padding: 8px;">Автор</th>
+    <td style="border: 1px solid black; padding: 8px;" th:text="${book.author.fullName}"></td>
+  </tr>
+  <tr>
+    <th style="border: 1px solid black; padding: 8px;">Жанры</th>
+    <td style="border: 1px solid black; padding: 8px;">
+      <span th:each="genre, iterStat : ${book.genres}">
+        <span th:text="${genre.name}"></span>
+        <span th:if="${!iterStat.last}">,</span>
+      </span>
+</table>
+
+<h3>Комментарии к книге:</h3>
+<table style="border: 2px solid black; border-collapse: collapse;">
+  <tr>
+    <th style="border: 1px solid black; padding: 8px;">№</th>
+    <th style="border: 1px solid black; padding: 8px;">Комментарий</th>
+  </tr>
+  <tr th:each="comment, iterStat : ${comments}">
+    <td style="border: 1px solid black; padding: 8px;" th:text="${iterStat.count}"></td>
+    <td style="border: 1px solid black; padding: 8px;" th:text="${comment.comment}"></td>
+  </tr>
+</table>
+
+
+<div style="margin-top: 20px;">
+  <a sec:authorize="hasRole('ADMIN')" th:href="@{/book/create}" style="text-decoration: none;">
+    <button style="padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+      Создать книгу
+    </button>
+  </a>
+  <a th:href="@{/books}" style="text-decoration: none;">
+    <button
+        style="padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+      Список книг
+    </button>
+  </a>
+</div>
+</body>
+</html>
