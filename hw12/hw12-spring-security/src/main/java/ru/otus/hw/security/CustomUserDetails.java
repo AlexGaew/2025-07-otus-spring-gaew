@@ -26,11 +26,11 @@ public class CustomUserDetails implements UserDetailsService {
     return org.springframework.security.core.userdetails.User.builder()
         .username(user.getUsername())
         .password(user.getPassword())
-        .authorities(mapRolesToAuthorities(user))
+        .authorities(mapToAuthorities(user))
         .build();
   }
 
-  private Collection<? extends GrantedAuthority> mapRolesToAuthorities(User user) {
+  private Collection<? extends GrantedAuthority> mapToAuthorities(User user) {
     return user.getAuthorities().stream()
         .map(SimpleGrantedAuthority::new)
         .toList();

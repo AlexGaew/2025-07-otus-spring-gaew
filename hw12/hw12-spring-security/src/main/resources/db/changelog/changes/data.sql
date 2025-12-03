@@ -17,6 +17,9 @@ insert into comments(comment, book_id)
 values ('qwer', 1), ('asd', 2), ('zxc', 3),
         ('ccc', 1), ('bbb', 2), ('rrr', 1);
 
-insert into users(username, password, authorities)
-values ('user', '$2a$10$u0nvEbyBxDAbBxaXc1h89.ICfe.5h512KFtzJDIotFfOuEOR34nIW', 'ROLE_USER'),
-('admin', '$2a$10$RoyJI6Ny4bEYPceXXptMCe40RNiy3mAo.8KRtQf7lSi81xCrBp5eS', 'ROLE_ADMIN');
+insert into users(username, password)
+values ('user', '$2a$10$u0nvEbyBxDAbBxaXc1h89.ICfe.5h512KFtzJDIotFfOuEOR34nIW'),
+('admin', '$2a$10$RoyJI6Ny4bEYPceXXptMCe40RNiy3mAo.8KRtQf7lSi81xCrBp5eS');
+
+insert into user_authorities(user_id, authority)
+values (1, 'ROLE_USER'), (2, 'ROLE_ADMIN');

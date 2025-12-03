@@ -104,9 +104,28 @@
       <column name="password" type="TEXT">
         <constraints nullable="false"/>
       </column>
-      <column name="authorities" type="TEXT">
+    </createTable>
+  </changeSet>
+
+  <changeSet id="7-create-user_authorities" author="alex">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="user_authorities"/>
+      </not>
+    </preConditions>
+    <createTable tableName="user_authorities">
+      <column name="user_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_user_authorities_users"
+          references="users(id)" deleteCascade="true"/>
+      </column>
+      <column name="authority" type="VARCHAR(255)">
+        <constraints nullable="false"/>
       </column>
     </createTable>
+    <addPrimaryKey tableName="user_authorities"
+      columnNames="user_id, authority"
+      constraintName="pk_user_authorities"/>
+
   </changeSet>
 
 </databaseChangeLog>

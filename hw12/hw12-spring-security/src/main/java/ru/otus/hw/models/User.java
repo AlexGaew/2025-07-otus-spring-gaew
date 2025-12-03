@@ -1,11 +1,15 @@
 package ru.otus.hw.models;
 
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
-import java.util.Arrays;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,9 +30,9 @@ public class User {
 
   private String password;
 
-  private String authorities;
-
-  public List<String> getAuthorities() {
-    return Arrays.asList(authorities.split(", "));
-  }
+  @ElementCollection(fetch = FetchType.EAGER)
+  @CollectionTable(name = "user_authorities",
+      joinColumns = @JoinColumn(name = "user_id"))
+  @Column(name = "authority")
+  private List<String> authorities;
 }

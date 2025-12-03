@@ -16,3 +16,10 @@ values (1, 1),   (1, 2),
 insert into comments(comment, book_id)
 values ('Comment_1', 1), ('Comment_2', 2), ('Comment_3', 3),
         ('Comment_4', 1), ('Comment_5', 2), ('Comment_6', 3);
+
+insert into users(username, password)
+values ('user', '$2a$10$u0nvEbyBxDAbBxaXc1h89.ICfe.5h512KFtzJDIotFfOuEOR34nIW'),
+('admin', '$2a$10$RoyJI6Ny4bEYPceXXptMCe40RNiy3mAo.8KRtQf7lSi81xCrBp5eS');
+
+insert into user_authorities(user_id, authority)
+values (1, 'ROLE_USER'), (2, 'ROLE_ADMIN');
