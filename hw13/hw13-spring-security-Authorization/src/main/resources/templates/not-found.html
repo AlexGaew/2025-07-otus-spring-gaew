@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Объект не найден</title>
+</head>
+<body>
+<h1>Объект не найден</h1>
+<b th:text="${errorMessage}"></b>
+<div style="margin-top: 20px;">
+  <a th:href="@{/books}" style="text-decoration: none;">
+    <button
+        style="padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+      Список книг
+    </button>
+  </a>
+</div>
+</body>
+</html>
