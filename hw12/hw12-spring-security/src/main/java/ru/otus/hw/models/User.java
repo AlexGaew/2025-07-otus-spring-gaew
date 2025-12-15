@@ -9,6 +9,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.Table;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -19,6 +21,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Entity
 @Getter
+@NamedEntityGraph(
+    name = "user-authority-entity-graph",
+    attributeNodes = {
+        @NamedAttributeNode("authorities")
+    }
+)
 @Table(name = "users")
 public class User {
 
@@ -30,7 +38,7 @@ public class User {
 
   private String password;
 
-  @ElementCollection(fetch = FetchType.EAGER)
+  @ElementCollection(fetch = FetchType.LAZY)
   @CollectionTable(name = "user_authorities",
       joinColumns = @JoinColumn(name = "user_id"))
   @Column(name = "authority")
