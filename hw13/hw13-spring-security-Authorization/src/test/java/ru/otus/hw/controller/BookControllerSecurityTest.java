@@ -139,7 +139,7 @@ public class BookControllerSecurityTest {
   }
 
   private static Stream<Arguments> getTestDataBooks() {
-    var roles = new String[]{"USER", "ADMIN"};
+    var roles = new String[]{"USER", "ADMIN", "MANAGER"};
     return Stream.of(
         Arguments.of("get", "/books", "user", roles, 200, false),
         Arguments.of("get", "/books", "admin", roles, 200, false),
@@ -148,7 +148,7 @@ public class BookControllerSecurityTest {
   }
 
   private static Stream<Arguments> getTestDataBooksEdit() {
-    var roles = new String[]{"USER", "ADMIN"};
+    var roles = new String[]{"USER", "ADMIN", "MANAGER"};
     return Stream.of(
         Arguments.of("get", "/book/1/edit", "user", new String[]{"USER"}, 403, false),
         Arguments.of("get", "/book/1/edit", "admin", roles, 200, false),
@@ -160,16 +160,17 @@ public class BookControllerSecurityTest {
   }
 
   private static Stream<Arguments> getTestDataBooksDelete() {
-    var roles = new String[]{"USER", "ADMIN"};
+    var roles = new String[]{"USER", "ADMIN", "MANAGER"};
     return Stream.of(
         Arguments.of("post", "/book/1/delete", "user", new String[]{"USER"}, 403, false),
+        Arguments.of("post", "/book/1/delete", "manager", new String[]{"MANAGER"}, 403, false),
         Arguments.of("post", "/book/1/delete", "admin", roles, 302, false),
         Arguments.of("post", "/book/1/delete", null, null, 302, true)
     );
   }
 
   private static Stream<Arguments> getTestDataBooksCreate() {
-    var roles = new String[]{"USER", "ADMIN"};
+    var roles = new String[]{"USER", "ADMIN", "MANAGER"};
     return Stream.of(
         Arguments.of("post", "/book/create", "user", new String[]{"USER"}, 403, false),
         Arguments.of("post", "/book/create", "admin", roles, 302, false),
@@ -178,7 +179,7 @@ public class BookControllerSecurityTest {
   }
 
   private static Stream<Arguments> getTestDataBookComments() {
-    var roles = new String[]{"USER", "ADMIN"};
+    var roles = new String[]{"USER", "ADMIN", "MANAGER"};
     var urls = new String[]{"/comments-book/1", "ADMIN"};
     return Stream.of(
         Arguments.of("post", "/comments-book/1", "user", roles, 200, false),
