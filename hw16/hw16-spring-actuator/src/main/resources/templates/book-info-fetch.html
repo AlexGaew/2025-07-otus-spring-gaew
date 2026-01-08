@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Информация о книге</title>
+</head>
+
+<body>
+<h3>Информация о книге:</h3>
+<table id="book-info-table" style="border: 2px solid black; border-collapse: collapse; margin-bottom: 20px;">
+  <tr>
+    <th style="border: 1px solid black; padding: 8px;">Название</th>
+    <td id="book-title" style="border: 1px solid black; padding: 8px;"></td>
+  </tr>
+  <tr>
+    <th style="border: 1px solid black; padding: 8px;">Автор</th>
+    <td id="book-author" style="border: 1px solid black; padding: 8px;"></td>
+  </tr>
+  <tr>
+    <th style="border: 1px solid black; padding: 8px;">Жанры</th>
+    <td id="book-genres" style="border: 1px solid black; padding: 8px;"></td>
+  </tr>
+</table>
+
+<h3>Комментарии к книге:</h3>
+<table style="border: 2px solid black; border-collapse: collapse;">
+  <thead>
+    <tr>
+      <th style="border: 1px solid black; padding: 8px;">№</th>
+      <th style="border: 1px solid black; padding: 8px;">Комментарий</th>
+    </tr>
+  </thead>
+  <tbody id="comments-tbody">
+  </tbody>
+</table>
+
+<div style="margin-top: 20px;">
+  <a href="/book/create" style="text-decoration: none;">
+    <button style="padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+      Создать книгу
+    </button>
+  </a>
+  <a href="/books" style="text-decoration: none;">
+    <button style="padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+      Список книг
+    </button>
+  </a>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const bookId = getBookIdFromUrl();
+
+    loadBookInfo(bookId);
+    loadComments(bookId);
+  });
+
+  function getBookIdFromUrl() {
+    const path = window.location.pathname;
+    const match = path.match(/\/book\/(\d+)\/info/);
+    return match ? match[1] : null;
+  }
+
+  function loadBookInfo(bookId) {
+    fetch(`/api/v1/book/${bookId}`)
+      .then(response => {
+        return response.json();
+      })
+      .then(book => {
+        document.getElementById('book-title').textContent = book.title;
+        document.getElementById('book-author').textContent = book.author.fullName;
+
+        const genres = book.genres.map(g => g.name).join(', ');
+        document.getElementById('book-genres').textContent = genres;
+      });
+  }
+
+  function loadComments(bookId) {
+    fetch(`/api/v1/book/${bookId}/comments`)
+      .then(response => {
+        return response.json();
+      })
+      .then(comments => {
+        renderComments(comments);
+      });
+  }
+
+  function renderComments(comments) {
+    const tbody = document.getElementById('comments-tbody');
+    tbody.innerHTML = '';
+
+    if (comments.length === 0) {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td colspan="2" style="border: 1px solid black; padding: 8px; text-align: center;">
+          Комментариев пока нет
+        </td>
+      `;
+      tbody.appendChild(row);
+      return;
+    }
+
+    comments.forEach((comment, index) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td style="border: 1px solid black; padding: 8px;">${index + 1}</td>
+        <td style="border: 1px solid black; padding: 8px;">${comment.comment}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+</script>
+
+</body>
+</html>
