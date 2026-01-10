@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Редактировать книгу</title>
+</head>
+<body>
+<h2>Редактировать книгу</h2>
+
+<form id="edit-book-form" style="width: 300px;">
+  <input type="hidden" id="bookId">
+
+  <div style="margin-bottom: 10px;">
+    <label>Название:</label><br>
+    <input type="text" id="title" name="title" style="width: 100%; padding: 5px;">
+    <div id="title-error" style="color: red;"></div>
+  </div>
+
+  <div style="margin-bottom: 10px;">
+    <label>Автор:</label><br>
+    <select id="authorId" name="authorId" style="width: 100%; padding: 5px;">
+    </select>
+    <div id="author-error" style="color: red;"></div>
+  </div>
+
+  <div style="margin-bottom: 15px;">
+    <label>Жанры:</label><br>
+    <div id="genres-container" style="border: 1px solid #ccc; padding: 10px; max-height: 150px; overflow-y: auto;">
+    </div>
+    <div id="genres-error" style="color: red;"></div>
+  </div>
+
+  <button type="submit">Сохранить изменения</button>
+  <a href="/books" style="text-decoration: none;">
+    <button type="button"
+        style="padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+      Список книг
+    </button>
+  </a>
+</form>
+
+<script>
+  let currentBookGenreIds = [];
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const bookId = getBookIdFromUrl();
+
+    document.getElementById('bookId').value = bookId;
+
+    loadBook(bookId);
+    loadAuthors(bookId);
+    loadGenres(bookId);
+
+    document.getElementById('edit-book-form').addEventListener('submit', handleSubmit);
+  });
+
+  function getBookIdFromUrl() {
+    const path = window.location.pathname;
+    const match = path.match(/\/book\/(\d+)\/edit/);
+    return match ? match[1] : null;
+  }
+
+  function loadBook(bookId) {
+    fetch(`/api/v1/book/${bookId}`)
+      .then(response => response.json())
+      .then(book => {
+        document.getElementById('title').value = book.title;
+        currentBookGenreIds = book.genres.map(g => g.id);
+
+        setTimeout(() => {
+          document.getElementById('authorId').value = book.author.id;
+          checkGenres();
+        }, 100);
+      });
+  }
+
+  function loadAuthors(bookId) {
+    fetch('/api/v1/author')
+      .then(response => response.json())
+      .then(authors => {
+        const select = document.getElementById('authorId');
+        authors.forEach(author => {
+          const option = document.createElement('option');
+          option.value = author.id;
+          option.textContent = author.fullName;
+          select.appendChild(option);
+        });
+      });
+  }
+
+  function loadGenres(bookId) {
+    fetch('/api/v1/genre')
+      .then(response => response.json())
+      .then(genres => {
+        const container = document.getElementById('genres-container');
+        genres.forEach(genre => {
+          const div = document.createElement('div');
+          div.style.marginBottom = '5px';
+          div.innerHTML = `
+            <input type="checkbox" id="genre_${genre.id}" name="genreIds" value="${genre.id}">
+            <label for="genre_${genre.id}">${genre.name}</label>
+          `;
+          container.appendChild(div);
+        });
+
+        checkGenres();
+      });
+  }
+
+  function checkGenres() {
+    currentBookGenreIds.forEach(genreId => {
+      const checkbox = document.getElementById(`genre_${genreId}`);
+      if (checkbox) {
+        checkbox.checked = true;
+      }
+    });
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault();
+
+    document.getElementById('title-error').textContent = '';
+    document.getElementById('genres-error').textContent = '';
+
+    const bookId = document.getElementById('bookId').value;
+    const title = document.getElementById('title').value;
+    const authorId = document.getElementById('authorId').value;
+    const genreCheckboxes = document.querySelectorAll('input[name="genreIds"]:checked');
+    const genreIds = Array.from(genreCheckboxes).map(cb => parseInt(cb.value));
+
+    let hasError = false;
+
+    if (!title || title.length < 2 || title.length > 10) {
+      document.getElementById('title-error').textContent = 'Размер текста от 2-х до 10 символов';
+      hasError = true;
+    }
+
+    if (genreIds.length === 0) {
+      document.getElementById('genres-error').textContent = 'У книги должен быть хотя бы 1 жанр';
+      hasError = true;
+    }
+
+    if (hasError) {
+      return;
+    }
+
+    const bookData = {
+      title: title,
+      authorId: parseInt(authorId),
+      genreIds: genreIds
+    };
+
+    fetch(`/api/v1/book/${bookId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(bookData)
+    })
+      .then(response => response.json())
+      .then(book => {
+        window.location.href = '/books';
+      });
+  }
+</script>
+
+</body>
+</html>
