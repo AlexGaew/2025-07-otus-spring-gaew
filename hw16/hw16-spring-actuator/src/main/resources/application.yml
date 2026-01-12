@@ -21,6 +21,9 @@ management:
   endpoint:
     health:
       show-details: always
+      group:
+        books:
+          include: dataBaseBooks
   endpoints:
     web:
       exposure:
