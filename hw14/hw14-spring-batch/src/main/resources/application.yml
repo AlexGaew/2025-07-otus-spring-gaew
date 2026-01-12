@@ -1,0 +1,59 @@
+spring:
+  main:
+    allow-circular-references: true
+
+  batch:
+    job:
+      enabled: false
+
+  shell:
+    interactive:
+      enabled: true
+    noninteractive:
+      enabled: false
+
+    command:
+      version:
+        enabled: false
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/test_db
+      host: localhost
+      port: 27017
+      database: test_db
+      authentication-database: admin
+      auto-index-creation: true
+
+  datasource:
+    url: jdbc:h2:mem:test_db
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+de:
+  flapdoodle:
+    mongodb:
+      embedded:
+        version: 6.0.5
+
+mongock:
+  runner-type: "InitializingBean"
+  change-logs-scan-package:
+    - ru.otus.springbatch.chandgelogs
+  mongo-db:
+    write-concern:
+      journal: false
+    read-concern: local
+
+
+logging:
+  level:
+    root: ERROR
+    Batch: INFO
+    ru.otus.springbatch: INFO
+
