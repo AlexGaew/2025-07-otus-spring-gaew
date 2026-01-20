@@ -21,11 +21,13 @@ management:
   endpoint:
     health:
       show-details: always
+      group:
+        books:
+          include: dataBaseBooks
   endpoints:
     web:
       exposure:
-        include: "*"
-
+        include: health, logfile, metrics
 
 
 logging:

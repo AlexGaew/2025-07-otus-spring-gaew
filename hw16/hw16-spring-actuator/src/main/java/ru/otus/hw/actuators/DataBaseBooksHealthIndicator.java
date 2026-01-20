@@ -5,18 +5,20 @@ import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.stereotype.Component;
-import ru.otus.hw.services.BookService;
+import ru.otus.hw.repositories.BookRepository;
 
 @Component
 @RequiredArgsConstructor
 public class DataBaseBooksHealthIndicator implements HealthIndicator {
 
-  private final BookService bookService;
+  private static final long EMPTY_BOOK_LIBRARY = 0;
+
+  private final BookRepository repository;
 
   @Override
   public Health health() {
-    var books = bookService.findAll();
-    if (books.isEmpty()) {
+    var countBooks = repository.count();
+    if (countBooks <= EMPTY_BOOK_LIBRARY) {
       return Health.down()
           .status(Status.DOWN)
           .withDetail("message", "Библиотека книг пуста!!! Обратите внимание!!!")
